@@ -8,10 +8,13 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <style>
+    /* ── Tabs ──────────────────────────────────────── */
     .tab-bar { display:flex; gap:6px; padding:16px 20px 0; overflow-x:auto; scrollbar-width:none; }
     .tab-bar::-webkit-scrollbar { display:none; }
     .tab { padding:10px 18px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.08); background:var(--bg2); color:var(--text2); font-size:0.82rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:all var(--transition); font-family:var(--font-body); }
     .tab.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+
+    /* ── Cards de profissional / serviço ──────────── */
     .prof-card { display:flex; align-items:center; gap:14px; }
     .prof-info { flex:1; }
     .prof-nome { font-weight:600; font-size:0.95rem; }
@@ -21,15 +24,31 @@
     .serv-nome { font-weight:600; font-size:0.95rem; }
     .serv-dur { font-size:0.78rem; color:var(--text2); margin-top:2px; }
     .serv-preco { font-family:var(--font-title); font-weight:700; color:var(--gold); font-size:1rem; }
+
+    /* ── Cards de agendamento ─────────────────────── */
     .ag-card { display:flex; flex-direction:column; gap:8px; }
     .ag-header { display:flex; align-items:center; justify-content:space-between; }
     .ag-hora { font-family:var(--font-title); font-size:1.2rem; font-weight:700; }
     .ag-cliente { font-size:0.9rem; color:var(--text2); }
-    .ag-servico { font-size:0.8rem; color:var(--text3); }
+    .ag-servico { font-size:0.8rem; color:var(--text3); margin-top:2px; }
+    .ag-actions { display:flex; gap:8px; margin-top:4px; }
+
+    /* ── Skeleton loader ──────────────────────────── */
+    .skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius-sm); }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-card { height:90px; margin-bottom:10px; border-radius:var(--radius-md); }
+    .sk-card-tall { height:120px; margin-bottom:10px; border-radius:var(--radius-md); }
+
+    /* ── Resumo do dia ────────────────────────────── */
+    .resumo-dia { display:flex; gap:10px; margin-bottom:16px; }
+    .resumo-stat { flex:1; background:var(--bg2); border-radius:var(--radius-md); padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
+    .resumo-stat-val { font-family:var(--font-title); font-size:1.4rem; font-weight:700; color:var(--gold); }
+    .resumo-stat-lbl { font-size:0.72rem; color:var(--text2); margin-top:2px; }
   </style>
 </head>
 <body>
-  <div id="loading-overlay"><div class="spinner"></div></div>
+  <!-- Loading overlay leve — só bloqueia na init, não em cada req -->
+  <div id="loading-overlay" style="display:none;"><div class="spinner"></div></div>
 
   <div class="page">
     <header class="header">
@@ -52,9 +71,29 @@
     <div id="tab-agenda" class="section">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
         <input type="date" class="input" id="data-agenda" style="flex:1;">
+        <button class="btn btn-ghost btn-sm" id="btn-atualizar" title="Atualizar">🔄</button>
       </div>
+
+      <!-- Resumo rápido do dia -->
+      <div class="resumo-dia" id="resumo-dia" style="display:none;">
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-total">0</div>
+          <div class="resumo-stat-lbl">Total</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-confirmados" style="color:var(--green);">0</div>
+          <div class="resumo-stat-lbl">Confirmados</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-aguardando" style="color:var(--gold);">0</div>
+          <div class="resumo-stat-lbl">Aguard. Pix</div>
+        </div>
+      </div>
+
       <div class="stack" id="lista-agendamentos">
-        <div class="empty"><div class="empty-icon">📅</div><p>Selecione uma data</p></div>
+        <div class="skeleton sk-card-tall"></div>
+        <div class="skeleton sk-card-tall"></div>
+        <div class="skeleton sk-card"></div>
       </div>
     </div>
 
@@ -65,7 +104,8 @@
         <button class="btn btn-primary btn-sm" id="btn-novo-prof">+ Novo</button>
       </div>
       <div class="stack" id="lista-prof">
-        <div class="empty"><div class="empty-icon">✂️</div><p>Nenhum profissional cadastrado</p></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
       </div>
     </div>
 
@@ -76,7 +116,8 @@
         <button class="btn btn-primary btn-sm" id="btn-novo-serv">+ Novo</button>
       </div>
       <div class="stack" id="lista-serv">
-        <div class="empty"><div class="empty-icon">💈</div><p>Nenhum serviço cadastrado</p></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
       </div>
     </div>
 
@@ -87,7 +128,8 @@
         <button class="btn btn-primary btn-sm" id="btn-novo-prod">+ Novo</button>
       </div>
       <div class="stack" id="lista-prod">
-        <div class="empty"><div class="empty-icon">🧴</div><p>Nenhum produto cadastrado</p></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
       </div>
     </div>
 
@@ -202,7 +244,10 @@
       document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p style="margin-top:8px;">Este link não possui um ID de salão válido.</p></div>';
     }
 
-    // ── TABS ────────────────────────────────────────────────
+    // ── Cache local para evitar chamadas repetidas ─────────────
+    const cache = { prof: null, serv: null, prod: null };
+
+    // ── TABS ────────────────────────────────────────────────────
     document.querySelectorAll('.tab').forEach(tab => {
       tab.onclick = () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -216,18 +261,33 @@
       };
     });
 
-    // ── FECHAR MODAIS ────────────────────────────────────────
+    // ── FECHAR MODAIS ───────────────────────────────────────────
     function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
     document.querySelectorAll('.modal-overlay').forEach(m => {
       m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
     });
 
-    // ── INIT ─────────────────────────────────────────────────
+    // ── SKELETON helpers ─────────────────────────────────────────
+    function skeletons(containerId, tall = false) {
+      const cls = tall ? 'sk-card-tall' : 'sk-card';
+      document.getElementById(containerId).innerHTML =
+        `<div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div>`;
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────
+    // Carrega info do salão e agenda em paralelo para ser rápido
     async function init() {
       mostrarLoading(true);
-      const info = await api({ action: 'getEstabelecimento', id: SALON_ID });
+
+      // Dispara as duas chamadas ao mesmo tempo
+      const [info] = await Promise.all([
+        api({ action: 'getEstabelecimento', id: SALON_ID }),
+      ]);
+
       mostrarLoading(false);
+
       if (info.erro) { mostrarToast(info.erro, 'erro'); return; }
+
       document.getElementById('salao-nome').textContent = info.nome;
       document.title = 'CortaJá — ' + info.nome;
 
@@ -235,7 +295,7 @@
       const el = document.getElementById('link-booking-url');
       if (el) el.textContent = linkUrl;
 
-      // Data padrão hoje
+      // Data padrão hoje e carrega agenda sem bloquear a tela
       document.getElementById('data-agenda').value = dataHoje();
       carregarAgenda();
     }
@@ -254,43 +314,131 @@
       }
     }
 
-    // ── AGENDA ───────────────────────────────────────────────
+    // ── AGENDA ───────────────────────────────────────────────────
     document.getElementById('data-agenda').onchange = carregarAgenda;
+    document.getElementById('btn-atualizar').onclick = carregarAgenda;
 
-    async function carregarAgenda() {
+    // Auto-atualiza a cada 60 segundos quando a aba agenda está visível
+    setInterval(() => {
+      const agendaTab = document.getElementById('tab-agenda');
+      if (agendaTab && agendaTab.style.display !== 'none') carregarAgenda(true);
+    }, 60000);
+
+    async function carregarAgenda(silencioso = false) {
       const data = document.getElementById('data-agenda').value;
       if (!data) return;
-      mostrarLoading(true);
-      const lista = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
-      mostrarLoading(false);
 
-      const filtrados = Array.isArray(lista) ? lista.filter(a => a.data === data) : [];
+      if (!silencioso) skeletons('lista-agendamentos', true);
+
+      // ── BUG CORRIGIDO: Normaliza a data para comparação ────────
+      // O Sheets pode retornar a.data como objeto Date ou string no
+      // formato "YYYY-MM-DD". Normalizamos tudo para string YYYY-MM-DD.
+      const lista = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
+
+      const filtrados = Array.isArray(lista)
+        ? lista.filter(a => normalizarData(a.data) === data)
+        : [];
+
       const container = document.getElementById('lista-agendamentos');
+      const resumo = document.getElementById('resumo-dia');
 
       if (!filtrados.length) {
+        resumo.style.display = 'none';
         container.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Sem agendamentos nesta data</p></div>';
         return;
       }
 
-      const statusLabel = { confirmado: ['badge-green','Confirmado'], selecionando: ['badge-grey','Aguardando Pix'], cancelado: ['badge-red','Cancelado'], expirado: ['badge-grey','Expirado'] };
+      // Ordena por horário
+      filtrados.sort((a, b) => {
+        const ha = normalizarHorario(a.horario);
+        const hb = normalizarHorario(b.horario);
+        return ha > hb ? 1 : -1;
+      });
 
-      container.innerHTML = filtrados.sort((a,b) => a.horario > b.horario ? 1 : -1).map(ag => {
+      // Atualiza resumo rápido
+      const total       = filtrados.filter(a => a.status !== 'expirado' && a.status !== 'cancelado').length;
+      const confirmados = filtrados.filter(a => a.status === 'confirmado').length;
+      const aguardando  = filtrados.filter(a => a.status === 'selecionando').length;
+      document.getElementById('rstat-total').textContent       = total;
+      document.getElementById('rstat-confirmados').textContent = confirmados;
+      document.getElementById('rstat-aguardando').textContent  = aguardando;
+      resumo.style.display = 'flex';
+
+      const statusLabel = {
+        confirmado:   ['badge-green', 'Confirmado'],
+        selecionando: ['badge-gold',  'Aguardando Pix'],
+        cancelado:    ['badge-red',   'Cancelado'],
+        expirado:     ['badge-grey',  'Expirado']
+      };
+
+      container.innerHTML = filtrados.map(ag => {
         const [cls, lbl] = statusLabel[ag.status] || ['badge-grey', ag.status];
+        const horario = normalizarHorario(ag.horario);
+
+        // Busca nomes de profissional e serviço no cache
+        const profNome = buscaNomeCache('prof', ag.id_cabeleireiro);
+        const servNome = buscaNomeCache('serv', ag.id_servico);
+
         return `
           <div class="card ag-card fade-in">
             <div class="ag-header">
-              <div class="ag-hora">${ag.horario}</div>
+              <div class="ag-hora">${horario}</div>
               <span class="badge ${cls}">${lbl}</span>
             </div>
-            <div class="ag-cliente">${ag.nome_cliente || '–'} · ${ag.telefone_cliente || '–'}</div>
-            ${ag.status === 'selecionando' ? `
-              <button class="btn btn-primary btn-sm" onclick="confirmarPag('${ag.id}')">✓ Confirmar Pagamento</button>
-            ` : ''}
-            ${ag.status === 'confirmado' ? `
-              <button class="btn btn-danger btn-sm" onclick="cancelarAg('${ag.id}')">Cancelar</button>
-            ` : ''}
+            <div class="ag-cliente">👤 ${ag.nome_cliente || '–'}</div>
+            <div class="ag-cliente">📱 ${ag.telefone_cliente || '–'}</div>
+            ${profNome ? `<div class="ag-servico">✂️ ${profNome}</div>` : ''}
+            ${servNome ? `<div class="ag-servico">💈 ${servNome}</div>` : ''}
+            <div class="ag-actions">
+              ${ag.status === 'selecionando' ? `
+                <button class="btn btn-primary btn-sm" onclick="confirmarPag('${ag.id}')">✓ Confirmar Pagamento</button>
+              ` : ''}
+              ${ag.status === 'confirmado' ? `
+                <button class="btn btn-danger btn-sm" onclick="cancelarAg('${ag.id}')">✕ Cancelar</button>
+              ` : ''}
+            </div>
           </div>`;
       }).join('');
+    }
+
+    // Normaliza campo data que pode vir como Date do Sheets ou string
+    function normalizarData(valor) {
+      if (!valor) return '';
+      if (valor instanceof Date) {
+        return valor.getFullYear() + '-' +
+          String(valor.getMonth() + 1).padStart(2, '0') + '-' +
+          String(valor.getDate()).padStart(2, '0');
+      }
+      // String pode vir como "2026-05-15T00:00:00Z" ou "2026-05-15"
+      return String(valor).substring(0, 10);
+    }
+
+    // Normaliza campo horário que pode vir como Date do Sheets ou string
+    function normalizarHorario(valor) {
+      if (!valor && valor !== 0) return '--:--';
+      if (typeof valor === 'string' && valor.indexOf(':') !== -1) return valor.substring(0, 5);
+      if (valor instanceof Date) {
+        return String(valor.getHours()).padStart(2, '0') + ':' + String(valor.getMinutes()).padStart(2, '0');
+      }
+      if (typeof valor === 'number') {
+        const min = Math.round(valor * 24 * 60);
+        return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+      }
+      return String(valor).substring(0, 5);
+    }
+
+    // Busca nome de profissional/serviço no cache local
+    function buscaNomeCache(tipo, id) {
+      if (!id) return '';
+      if (tipo === 'prof' && cache.prof) {
+        const p = cache.prof.find(x => x.id === id);
+        return p ? p.nome : '';
+      }
+      if (tipo === 'serv' && cache.serv) {
+        const s = cache.serv.find(x => x.id === id);
+        return s ? s.nome_servico : '';
+      }
+      return '';
     }
 
     async function confirmarPag(id) {
@@ -310,13 +458,18 @@
       carregarAgenda();
     }
 
-    // ── PROFISSIONAIS ─────────────────────────────────────────
-    async function carregarProf() {
-      mostrarLoading(true);
+    // ── PROFISSIONAIS ─────────────────────────────────────────────
+    async function carregarProf(forcar = false) {
+      if (cache.prof && !forcar) { renderProf(cache.prof); return; }
+      skeletons('lista-prof');
       const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
-      mostrarLoading(false);
+      cache.prof = Array.isArray(lista) ? lista : [];
+      renderProf(cache.prof);
+    }
+
+    function renderProf(lista) {
       const container = document.getElementById('lista-prof');
-      if (!Array.isArray(lista) || !lista.length) {
+      if (!lista.length) {
         container.innerHTML = '<div class="empty"><div class="empty-icon">✂️</div><p>Nenhum profissional cadastrado</p></div>'; return;
       }
       container.innerHTML = lista.map(p => `
@@ -340,25 +493,39 @@
       const nome = document.getElementById('fp-nome').value.trim();
       if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
       mostrarLoading(true);
-      const r = await api({ action: 'salvarCabeleireiro', id_estabelecimento: SALON_ID, nome, especialidades: document.getElementById('fp-esp').value.trim(), foto_url: document.getElementById('fp-foto').value.trim() });
+      const r = await api({ action: 'salvarCabeleireiro', id_estabelecimento: SALON_ID, nome,
+        especialidades: document.getElementById('fp-esp').value.trim(),
+        foto_url: document.getElementById('fp-foto').value.trim() });
       mostrarLoading(false);
-      if (r.sucesso) { mostrarToast('Profissional cadastrado!', 'sucesso'); fecharModal('modal-prof'); carregarProf(); ['fp-nome','fp-esp','fp-foto'].forEach(id => document.getElementById(id).value = ''); }
-      else mostrarToast(r.erro || 'Erro', 'erro');
+      if (r.sucesso) {
+        mostrarToast('Profissional cadastrado!', 'sucesso');
+        fecharModal('modal-prof');
+        cache.prof = null; // invalida cache
+        carregarProf(true);
+        ['fp-nome','fp-esp','fp-foto'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
     };
 
     async function deletarProf(id) {
       if (!confirm('Excluir profissional?')) return;
       await api({ action: 'deletarCabeleireiro', id });
-      mostrarToast('Removido', 'sucesso'); carregarProf();
+      cache.prof = null;
+      mostrarToast('Removido', 'sucesso');
+      carregarProf(true);
     }
 
-    // ── SERVIÇOS ──────────────────────────────────────────────
-    async function carregarServ() {
-      mostrarLoading(true);
+    // ── SERVIÇOS ──────────────────────────────────────────────────
+    async function carregarServ(forcar = false) {
+      if (cache.serv && !forcar) { renderServ(cache.serv); return; }
+      skeletons('lista-serv');
       const lista = await api({ action: 'listarServicos', id_estabelecimento: SALON_ID });
-      mostrarLoading(false);
+      cache.serv = Array.isArray(lista) ? lista : [];
+      renderServ(cache.serv);
+    }
+
+    function renderServ(lista) {
       const container = document.getElementById('lista-serv');
-      if (!Array.isArray(lista) || !lista.length) {
+      if (!lista.length) {
         container.innerHTML = '<div class="empty"><div class="empty-icon">💈</div><p>Nenhum serviço cadastrado</p></div>'; return;
       }
       container.innerHTML = lista.map(s => `
@@ -382,25 +549,39 @@
       const nome = document.getElementById('fs-nome').value.trim();
       if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
       mostrarLoading(true);
-      const r = await api({ action: 'salvarServico', id_estabelecimento: SALON_ID, nome_servico: nome, preco: document.getElementById('fs-preco').value, duracao_minutos: document.getElementById('fs-dur').value || 30 });
+      const r = await api({ action: 'salvarServico', id_estabelecimento: SALON_ID, nome_servico: nome,
+        preco: document.getElementById('fs-preco').value,
+        duracao_minutos: document.getElementById('fs-dur').value || 30 });
       mostrarLoading(false);
-      if (r.sucesso) { mostrarToast('Serviço cadastrado!', 'sucesso'); fecharModal('modal-serv'); carregarServ(); ['fs-nome','fs-preco','fs-dur'].forEach(id => document.getElementById(id).value = ''); }
-      else mostrarToast(r.erro || 'Erro', 'erro');
+      if (r.sucesso) {
+        mostrarToast('Serviço cadastrado!', 'sucesso');
+        fecharModal('modal-serv');
+        cache.serv = null;
+        carregarServ(true);
+        ['fs-nome','fs-preco','fs-dur'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
     };
 
     async function deletarServ(id) {
       if (!confirm('Excluir serviço?')) return;
       await api({ action: 'deletarServico', id });
-      mostrarToast('Removido', 'sucesso'); carregarServ();
+      cache.serv = null;
+      mostrarToast('Removido', 'sucesso');
+      carregarServ(true);
     }
 
-    // ── PRODUTOS ──────────────────────────────────────────────
-    async function carregarProd() {
-      mostrarLoading(true);
+    // ── PRODUTOS ──────────────────────────────────────────────────
+    async function carregarProd(forcar = false) {
+      if (cache.prod && !forcar) { renderProd(cache.prod); return; }
+      skeletons('lista-prod');
       const lista = await api({ action: 'listarProdutos', id_estabelecimento: SALON_ID });
-      mostrarLoading(false);
+      cache.prod = Array.isArray(lista) ? lista : [];
+      renderProd(cache.prod);
+    }
+
+    function renderProd(lista) {
       const container = document.getElementById('lista-prod');
-      if (!Array.isArray(lista) || !lista.length) {
+      if (!lista.length) {
         container.innerHTML = '<div class="empty"><div class="empty-icon">🧴</div><p>Nenhum produto cadastrado</p></div>'; return;
       }
       container.innerHTML = lista.map(p => `
@@ -427,16 +608,26 @@
       const nome = document.getElementById('fpd-nome').value.trim();
       if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
       mostrarLoading(true);
-      const r = await api({ action: 'salvarProduto', id_estabelecimento: SALON_ID, nome, descricao: document.getElementById('fpd-desc').value.trim(), preco: document.getElementById('fpd-preco').value, foto_url: document.getElementById('fpd-foto').value.trim() });
+      const r = await api({ action: 'salvarProduto', id_estabelecimento: SALON_ID, nome,
+        descricao: document.getElementById('fpd-desc').value.trim(),
+        preco: document.getElementById('fpd-preco').value,
+        foto_url: document.getElementById('fpd-foto').value.trim() });
       mostrarLoading(false);
-      if (r.sucesso) { mostrarToast('Produto cadastrado!', 'sucesso'); fecharModal('modal-prod'); carregarProd(); ['fpd-nome','fpd-desc','fpd-preco','fpd-foto'].forEach(id => document.getElementById(id).value = ''); }
-      else mostrarToast(r.erro || 'Erro', 'erro');
+      if (r.sucesso) {
+        mostrarToast('Produto cadastrado!', 'sucesso');
+        fecharModal('modal-prod');
+        cache.prod = null;
+        carregarProd(true);
+        ['fpd-nome','fpd-desc','fpd-preco','fpd-foto'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
     };
 
     async function deletarProd(id) {
       if (!confirm('Excluir produto?')) return;
       await api({ action: 'deletarProduto', id });
-      mostrarToast('Removido', 'sucesso'); carregarProd();
+      cache.prod = null;
+      mostrarToast('Removido', 'sucesso');
+      carregarProd(true);
     }
 
     init();
