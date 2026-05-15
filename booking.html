@@ -30,6 +30,78 @@
     .resumo-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
     .resumo-label { font-size:0.82rem;color:var(--text2); }
     .resumo-valor { font-size:0.9rem;font-weight:600; }
+
+    /* ── Tela de Login ──────────────────────────────────────── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100dvh - 120px);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 72px; height: 72px;
+      border-radius: var(--radius-lg);
+      background: var(--bg3);
+      border: 1px solid rgba(201,168,76,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 20px;
+    }
+    .login-title {
+      font-family: var(--font-title);
+      font-size: 1.5rem; font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .login-sub {
+      font-size: 0.85rem; color: var(--text2);
+      margin-bottom: 32px; line-height: 1.6;
+      max-width: 300px;
+    }
+    .login-form {
+      width: 100%; max-width: 360px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    /* Botão Google */
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 14px 20px;
+      background: #fff; color: #1f1f1f;
+      border: none; border-radius: var(--radius-md);
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition);
+      font-family: var(--font-body);
+    }
+    .btn-google:hover { background: #f5f5f5; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    .btn-google:active { transform: translateY(0); }
+    .btn-google svg { flex-shrink: 0; }
+    /* Divisor "ou" */
+    .login-divider {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text3); font-size: 0.75rem;
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+    /* Painel de telefone — aparece ao clicar em "Usar telefone" */
+    #phone-panel { display: none; flex-direction: column; gap: 12px; }
+    #phone-panel.open { display: flex; }
+    /* Avatar do usuário logado no header */
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg3); border-radius: 99px;
+      padding: 4px 12px 4px 4px;
+      font-size: 0.8rem; color: var(--text2);
+    }
+    .user-chip img, .user-chip .user-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      object-fit: cover; background: var(--gold-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: var(--gold); font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -52,156 +124,367 @@
     <header class="header">
       <div class="header-inner">
         <div class="logo">Corta<span>Já</span></div>
-        <div id="hdr-salao" style="font-size:0.82rem;color:var(--text2);"></div>
+        <div id="hdr-right">
+          <div id="hdr-salao" style="font-size:0.82rem;color:var(--text2);"></div>
+        </div>
       </div>
     </header>
 
-    <!-- Hero do Salão -->
-    <div class="salao-hero">
-      <div class="salao-logo" id="salao-logo">💈</div>
-      <div class="salao-nome" id="salao-nome">Carregando...</div>
-      <div class="salao-horario" id="salao-horario"></div>
-    </div>
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- TELA DE LOGIN (mostrada antes dos steps de agendamento) -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="login-screen">
+      <div class="login-logo">✂️</div>
+      <div class="login-title">Bem-vindo!</div>
+      <p class="login-sub">Entre para agendar seu horário com facilidade e acompanhar seus agendamentos.</p>
 
-    <!-- Step indicator -->
-    <div class="step-indicator" id="step-indicator">
-      <div class="step-dot active" id="sd-1"></div>
-      <div class="step-dot" id="sd-2"></div>
-      <div class="step-dot" id="sd-3"></div>
-      <div class="step-dot" id="sd-4"></div>
-    </div>
+      <div class="login-form">
 
-    <!-- ── STEP 1: Profissional + Serviço ───────────────── -->
-    <div class="step active section" id="step-1">
-      <div class="section-title">Escolha o Profissional</div>
-      <div class="prof-chips" id="prof-chips">
-        <div class="empty"><div class="empty-icon">✂️</div><p>Carregando...</p></div>
-      </div>
+        <!-- Botão Google -->
+        <button class="btn-google" id="btn-login-google">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continuar com Google
+        </button>
 
-      <div style="margin-top:24px;">
-        <div class="section-title">Escolha o Serviço</div>
-        <div class="stack" id="serv-list">
-          <div class="empty"><div class="empty-icon">💈</div><p>Carregando...</p></div>
+        <div class="login-divider">ou</div>
+
+        <!-- Botão para abrir campo de telefone -->
+        <button class="btn btn-outline btn-full" id="btn-show-phone" style="gap:8px;">
+          📱 Usar número de telefone
+        </button>
+
+        <!-- Painel de telefone (oculto por padrão) -->
+        <div id="phone-panel">
+          <div class="input-group" style="margin:0;">
+            <label class="input-label">Nome Completo *</label>
+            <input class="input" id="login-nome" placeholder="Seu nome" type="text" autocomplete="name">
+          </div>
+          <div class="input-group" style="margin:0;">
+            <label class="input-label">WhatsApp *</label>
+            <input class="input" id="login-tel" placeholder="(61) 99999-9999" type="tel" autocomplete="tel">
+          </div>
+          <button class="btn btn-primary btn-full" id="btn-login-phone">Entrar →</button>
         </div>
-      </div>
 
-      <button class="btn btn-primary btn-full" style="margin-top:24px;" id="btn-step1">Próximo →</button>
-    </div>
-
-    <!-- ── STEP 2: Data e Horário ───────────────────────── -->
-    <div class="step section" id="step-2">
-      <div class="section-title">Escolha a Data</div>
-      <input type="date" class="input" id="data-escolhida" style="margin-bottom:20px;">
-
-      <div class="section-title">Horários Disponíveis</div>
-      <div class="legenda">
-        <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Disponível</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--text3)"></div>Ocupado</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Confirmado</div>
-      </div>
-      <div style="margin-top:16px;">
-        <div class="slot-grid" id="slot-grid">
-          <p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Selecione uma data</p>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;margin-top:24px;">
-        <button class="btn btn-ghost btn-full" id="btn-back-1">← Voltar</button>
-        <button class="btn btn-primary btn-full" id="btn-step2">Próximo →</button>
+        <p style="font-size:0.73rem;color:var(--text3);margin-top:4px;line-height:1.5;">
+          Ao entrar, você concorda com os Termos de Uso e Política de Privacidade do CortaJá.
+        </p>
       </div>
     </div>
 
-    <!-- ── STEP 3: Dados do cliente ─────────────────────── -->
-    <div class="step section" id="step-3">
-      <div class="section-title">Seus Dados</div>
-      <div class="stack">
-        <div class="input-group">
-          <label class="input-label">Nome Completo *</label>
-          <input class="input" id="cli-nome" placeholder="Seu nome" type="text">
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- CONTEÚDO DE AGENDAMENTO (oculto até login) -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="booking-content" style="display:none;">
+
+      <!-- Hero do Salão -->
+      <div class="salao-hero">
+        <div class="salao-logo" id="salao-logo">💈</div>
+        <div class="salao-nome" id="salao-nome">Carregando...</div>
+        <div class="salao-horario" id="salao-horario"></div>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator" id="step-indicator">
+        <div class="step-dot active" id="sd-1"></div>
+        <div class="step-dot" id="sd-2"></div>
+        <div class="step-dot" id="sd-3"></div>
+        <div class="step-dot" id="sd-4"></div>
+      </div>
+
+      <!-- ── STEP 1: Profissional + Serviço ───────────────── -->
+      <div class="step active section" id="step-1">
+        <div class="section-title">Escolha o Profissional</div>
+        <div class="prof-chips" id="prof-chips">
+          <div class="empty"><div class="empty-icon">✂️</div><p>Carregando...</p></div>
         </div>
-        <div class="input-group">
-          <label class="input-label">WhatsApp *</label>
-          <input class="input" id="cli-tel" placeholder="(61) 99999-9999" type="tel">
+
+        <div style="margin-top:24px;">
+          <div class="section-title">Escolha o Serviço</div>
+          <div class="stack" id="serv-list">
+            <div class="empty"><div class="empty-icon">💈</div><p>Carregando...</p></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" style="margin-top:24px;" id="btn-step1">Próximo →</button>
+      </div>
+
+      <!-- ── STEP 2: Data e Horário ───────────────────────── -->
+      <div class="step section" id="step-2">
+        <div class="section-title">Escolha a Data</div>
+        <input type="date" class="input" id="data-escolhida" style="margin-bottom:20px;">
+
+        <div class="section-title">Horários Disponíveis</div>
+        <div class="legenda">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Disponível</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--text3)"></div>Ocupado</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Confirmado</div>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="slot-grid" id="slot-grid">
+            <p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Selecione uma data</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px;">
+          <button class="btn btn-ghost btn-full" id="btn-back-1">← Voltar</button>
+          <button class="btn btn-primary btn-full" id="btn-step2">Próximo →</button>
         </div>
       </div>
 
-      <div class="card" style="margin-top:20px;">
-        <div class="section-title" style="margin-bottom:12px;">Resumo</div>
-        <div class="resumo-row">
-          <span class="resumo-label">Profissional</span>
-          <span class="resumo-valor" id="r-prof">–</span>
+      <!-- ── STEP 3: Dados do cliente ─────────────────────── -->
+      <div class="step section" id="step-3">
+        <div class="section-title">Confirmar Dados</div>
+
+        <!-- Dados pré-preenchidos a partir do login -->
+        <div class="card" style="margin-bottom:16px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.15);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div id="confirm-avatar" style="width:44px;height:44px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden;"></div>
+            <div>
+              <div id="confirm-nome" style="font-weight:600;font-size:0.95rem;"></div>
+              <div id="confirm-contato" style="font-size:0.8rem;color:var(--text2);margin-top:2px;"></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="voltarParaLogin()" style="margin-left:auto;font-size:0.75rem;">Trocar</button>
+          </div>
         </div>
-        <div class="resumo-row">
-          <span class="resumo-label">Serviço</span>
-          <span class="resumo-valor" id="r-serv">–</span>
+
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px;">Resumo</div>
+          <div class="resumo-row">
+            <span class="resumo-label">Profissional</span>
+            <span class="resumo-valor" id="r-prof">–</span>
+          </div>
+          <div class="resumo-row">
+            <span class="resumo-label">Serviço</span>
+            <span class="resumo-valor" id="r-serv">–</span>
+          </div>
+          <div class="resumo-row">
+            <span class="resumo-label">Data e Horário</span>
+            <span class="resumo-valor" id="r-data">–</span>
+          </div>
+          <div class="resumo-row" style="border:none;">
+            <span class="resumo-label">Taxa de confirmação</span>
+            <span class="resumo-valor" style="color:var(--gold);">R$ 0,99</span>
+          </div>
         </div>
-        <div class="resumo-row">
-          <span class="resumo-label">Data e Horário</span>
-          <span class="resumo-valor" id="r-data">–</span>
-        </div>
-        <div class="resumo-row" style="border:none;">
-          <span class="resumo-label">Taxa de confirmação</span>
-          <span class="resumo-valor" style="color:var(--gold);">R$ 0,99</span>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button class="btn btn-ghost btn-full" id="btn-back-2">← Voltar</button>
+          <button class="btn btn-primary btn-full" id="btn-step3">Confirmar →</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;margin-top:20px;">
-        <button class="btn btn-ghost btn-full" id="btn-back-2">← Voltar</button>
-        <button class="btn btn-primary btn-full" id="btn-step3">Confirmar →</button>
-      </div>
-    </div>
+      <!-- ── STEP 4: Pagamento Pix ─────────────────────────── -->
+      <div class="step section" id="step-4">
+        <div class="section-title">Confirmar com Pix</div>
 
-    <!-- ── STEP 4: Pagamento Pix ─────────────────────────── -->
-    <div class="step section" id="step-4">
-      <div class="section-title">Confirmar com Pix</div>
+        <div class="pix-card">
+          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;">Chave Pix</p>
+          <div class="pix-key" id="pix-key">61991944143</div>
+          <p style="font-size:0.82rem;color:var(--text2);margin:8px 0 4px;">Valor</p>
+          <div class="pix-valor">R$ 0,99</div>
+          <button class="btn btn-outline btn-sm" style="margin-top:16px;" id="btn-copiar-pix">📋 Copiar Chave</button>
+        </div>
 
-      <div class="pix-card">
-        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;">Chave Pix</p>
-        <div class="pix-key" id="pix-key">61991944143</div>
-        <p style="font-size:0.82rem;color:var(--text2);margin:8px 0 4px;">Valor</p>
-        <div class="pix-valor">R$ 0,99</div>
-        <button class="btn btn-outline btn-sm" style="margin-top:16px;" id="btn-copiar-pix">📋 Copiar Chave</button>
+        <div class="card" style="margin-top:16px;">
+          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:8px;">⏱ Seu horário está reservado por <strong id="timer-text" style="color:var(--gold);">10:00</strong></p>
+          <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="card" style="margin-top:12px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.2);">
+          <p style="font-size:0.82rem;color:var(--text2);">Após realizar o pagamento, o responsável do salão irá confirmar seu agendamento. Você pode fechar esta tela.</p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button class="btn btn-ghost btn-full" id="btn-back-3">← Cancelar</button>
+          <button class="btn btn-primary btn-full" id="btn-verificar">Já paguei ✓</button>
+        </div>
       </div>
 
-      <div class="card" style="margin-top:16px;">
-        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:8px;">⏱ Seu horário está reservado por <strong id="timer-text" style="color:var(--gold);">10:00</strong></p>
-        <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.2);">
-        <p style="font-size:0.82rem;color:var(--text2);">Após realizar o pagamento, o responsável do salão irá confirmar seu agendamento. Você pode fechar esta tela.</p>
-      </div>
-
-      <div style="display:flex;gap:10px;margin-top:20px;">
-        <button class="btn btn-ghost btn-full" id="btn-back-3">← Cancelar</button>
-        <button class="btn btn-primary btn-full" id="btn-verificar">Já paguei ✓</button>
-      </div>
-    </div>
+    </div><!-- /booking-content -->
   </div>
 
   <script src="config.js"></script>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
 
-    // PWA
+    // ── PWA ─────────────────────────────────────────────────
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-banner').classList.add('show'); });
-    document.getElementById('pwa-install-btn').onclick = async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } document.getElementById('pwa-banner').classList.remove('show'); };
-    document.getElementById('pwa-dismiss-btn').onclick = () => document.getElementById('pwa-banner').classList.remove('show');
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); deferredPrompt = e;
+      document.getElementById('pwa-banner').classList.add('show');
+    });
+    document.getElementById('pwa-install-btn').onclick = async () => {
+      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+      document.getElementById('pwa-banner').classList.remove('show');
+    };
+    document.getElementById('pwa-dismiss-btn').onclick = () =>
+      document.getElementById('pwa-banner').classList.remove('show');
 
-    const params = new URLSearchParams(location.search);
+    const params   = new URLSearchParams(location.search);
     const SALON_ID = params.get('id');
 
-    let salonInfo = null;
+    if (!SALON_ID) {
+      document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p>Solicite um novo link ao salão.</p></div>';
+    }
+
+    let salonInfo    = null;
     let selectedProf = null;
     let selectedServ = null;
     let selectedSlot = null;
     let agendamentoId = null;
     let timerInterval = null;
-    let timerSeconds = CONFIG.TEMPO_RESERVA * 60;
+    let timerSeconds  = CONFIG.TEMPO_RESERVA * 60;
 
-    if (!SALON_ID) {
-      document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p>Solicite um novo link ao salão.</p></div>';
+    // ── Estado do cliente logado ──────────────────────────
+    // { nome, telefone, email, foto, metodo: 'google'|'phone' }
+    let clienteLogado = null;
+
+    // ── Verifica se já existe sessão salva ─────────────────
+    function carregarSessao() {
+      try {
+        const salvo = sessionStorage.getItem('cj_cliente');
+        if (salvo) {
+          clienteLogado = JSON.parse(salvo);
+          return true;
+        }
+      } catch(_) {}
+      return false;
+    }
+
+    function salvarSessao(dados) {
+      clienteLogado = dados;
+      try { sessionStorage.setItem('cj_cliente', JSON.stringify(dados)); } catch(_) {}
+    }
+
+    // ── Exibe conteúdo de agendamento após login ───────────
+    function entrarNoApp() {
+      document.getElementById('login-screen').style.display  = 'none';
+      document.getElementById('booking-content').style.display = '';
+
+      // Avatar no header
+      const hdrRight = document.getElementById('hdr-right');
+      const iniciais = (clienteLogado.nome || '?').split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+      hdrRight.innerHTML = `
+        <div class="user-chip">
+          ${clienteLogado.foto
+            ? `<img src="${clienteLogado.foto}" alt="${clienteLogado.nome}">`
+            : `<div class="user-avatar">${iniciais}</div>`}
+          <span>${clienteLogado.nome.split(' ')[0]}</span>
+        </div>`;
+
+      // Preenche card de confirmação no step 3
+      document.getElementById('confirm-nome').textContent    = clienteLogado.nome;
+      document.getElementById('confirm-contato').textContent = clienteLogado.email || clienteLogado.telefone || '';
+      const avatarEl = document.getElementById('confirm-avatar');
+      if (clienteLogado.foto) {
+        avatarEl.innerHTML = `<img src="${clienteLogado.foto}" style="width:100%;height:100%;object-fit:cover;">`;
+      } else {
+        avatarEl.textContent = iniciais;
+      }
+    }
+
+    function voltarParaLogin() {
+      clienteLogado = null;
+      try { sessionStorage.removeItem('cj_cliente'); } catch(_) {}
+      document.getElementById('login-screen').style.display  = '';
+      document.getElementById('booking-content').style.display = 'none';
+      document.getElementById('hdr-right').innerHTML =
+        '<div id="hdr-salao" style="font-size:0.82rem;color:var(--text2);"></div>';
+    }
+
+    // ── LOGIN: mostrar campo de telefone ──────────────────
+    document.getElementById('btn-show-phone').onclick = () => {
+      const panel = document.getElementById('phone-panel');
+      const isOpen = panel.classList.toggle('open');
+      document.getElementById('btn-show-phone').textContent =
+        isOpen ? '✕ Cancelar' : '📱 Usar número de telefone';
+    };
+
+    // ── LOGIN POR TELEFONE ────────────────────────────────
+    document.getElementById('btn-login-phone').onclick = () => {
+      const nome = document.getElementById('login-nome').value.trim();
+      const tel  = document.getElementById('login-tel').value.trim();
+      if (!nome) { mostrarToast('Informe seu nome', 'erro'); return; }
+      if (!tel)  { mostrarToast('Informe seu WhatsApp', 'erro'); return; }
+      salvarSessao({ nome, telefone: tel, email: '', foto: '', metodo: 'phone' });
+      entrarNoApp();
+    };
+
+    // ── LOGIN POR GOOGLE ──────────────────────────────────
+    // Implementação via Google Identity Services (GIS / One Tap)
+    // O botão aciona o popup de conta. Ao retornar, decodifica o JWT.
+    document.getElementById('btn-login-google').onclick = () => {
+      // Carrega o script do Google dinamicamente se ainda não foi carregado
+      if (!window.google) {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => iniciarGoogleLogin();
+        document.head.appendChild(script);
+      } else {
+        iniciarGoogleLogin();
+      }
+    };
+
+    function iniciarGoogleLogin() {
+      // ⚠️ Substitua YOUR_GOOGLE_CLIENT_ID pelo seu Client ID OAuth 2.0
+      // (Google Cloud Console → APIs → Credenciais → ID do cliente OAuth)
+      const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+      if (GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
+        // Modo demo: simula um login Google para fins de desenvolvimento
+        mostrarToast('Configure o GOOGLE_CLIENT_ID no config.js', 'erro');
+        // Fallback demo — remove em produção
+        salvarSessao({
+          nome: 'Usuário Demo',
+          email: 'demo@gmail.com',
+          telefone: '',
+          foto: '',
+          metodo: 'google'
+        });
+        entrarNoApp();
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      google.accounts.id.prompt(notification => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Fallback: abre popup manual
+          google.accounts.id.renderButton(
+            document.createElement('div'),
+            { theme: 'outline', size: 'large' }
+          );
+        }
+      });
+    }
+
+    function handleGoogleCredential(response) {
+      // Decodifica o JWT sem biblioteca externa (payload é Base64url)
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        salvarSessao({
+          nome:     payload.name  || payload.email,
+          email:    payload.email || '',
+          telefone: '',
+          foto:     payload.picture || '',
+          metodo:   'google'
+        });
+        entrarNoApp();
+      } catch(e) {
+        mostrarToast('Erro ao processar login Google', 'erro');
+      }
     }
 
     // ── STEP NAV ────────────────────────────────────────────
@@ -237,7 +520,6 @@
       if (!selectedSlot) { mostrarToast('Selecione um horário', 'erro'); return; }
       const data = document.getElementById('data-escolhida').value;
       if (!data) { mostrarToast('Selecione uma data', 'erro'); return; }
-      // Preenche resumo
       document.getElementById('r-prof').textContent = selectedProf.nome;
       document.getElementById('r-serv').textContent = selectedServ.nome_servico + ' — ' + formatarMoeda(selectedServ.preco);
       document.getElementById('r-data').textContent = formatarData(data) + ' às ' + selectedSlot;
@@ -246,20 +528,25 @@
 
     // ── STEP 3 → 4 ──────────────────────────────────────────
     document.getElementById('btn-step3').onclick = async () => {
-      const nome = document.getElementById('cli-nome').value.trim();
-      const tel  = document.getElementById('cli-tel').value.trim();
-      if (!nome || !tel) { mostrarToast('Preencha nome e telefone', 'erro'); return; }
+      // Usa dados do cliente logado
+      const nome = clienteLogado.nome;
+      const tel  = clienteLogado.telefone;
+      const email = clienteLogado.email || '';
+
+      if (!nome) { mostrarToast('Dados do cliente ausentes', 'erro'); return; }
 
       const data = document.getElementById('data-escolhida').value;
       mostrarLoading(true);
       const res = await api({
         action: 'criarAgendamento',
         id_estabelecimento: SALON_ID,
-        id_cabeleireiro: selectedProf.id,
-        id_servico: selectedServ.id,
-        nome_cliente: nome,
-        telefone_cliente: tel,
-        data, horario: selectedSlot
+        id_cabeleireiro:    selectedProf.id,
+        id_servico:         selectedServ.id,
+        nome_cliente:       nome,
+        telefone_cliente:   tel,
+        email_cliente:      email,
+        data,
+        horario: selectedSlot
       });
       mostrarLoading(false);
 
@@ -280,7 +567,6 @@
     // ── JÁ PAGUEI ────────────────────────────────────────────
     document.getElementById('btn-verificar').onclick = async () => {
       mostrarToast('Aguardando confirmação do salão...', 'sucesso');
-      // Redireciona para tela de sucesso
       document.querySelector('#step-4').innerHTML = `
         <div style="text-align:center;padding:40px 0;">
           <div style="font-size:3rem;margin-bottom:16px;">✅</div>
@@ -316,7 +602,7 @@
 
     // ── SLOTS ─────────────────────────────────────────────────
     const dataInput = document.getElementById('data-escolhida');
-    dataInput.min = dataHoje();
+    dataInput.min   = dataHoje();
     dataInput.value = dataHoje();
     dataInput.onchange = carregarSlots;
 
@@ -334,16 +620,15 @@
         grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Erro ao carregar horários</p>';
         return;
       }
-
       if (!res.slots.length) {
         grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Nenhum horário disponível</p>';
         return;
       }
 
       grid.innerHTML = res.slots.map(slot => {
-        const cls = slot.status === 'disponivel' ? 'slot-disponivel' :
-                    slot.status === 'selecionando' ? 'slot-selecionando' :
-                    slot.status === 'confirmado' ? 'slot-confirmado' : 'slot-bloqueado';
+        const cls = slot.status === 'disponivel'   ? 'slot-disponivel'   :
+                    slot.status === 'selecionando'  ? 'slot-selecionando' :
+                    slot.status === 'confirmado'    ? 'slot-confirmado'   : 'slot-bloqueado';
         const clickable = slot.status === 'disponivel';
         return `<button class="slot ${cls}" ${clickable ? `onclick="selecionarSlot('${slot.horario}', this)"` : 'disabled'}>${slot.horario}</button>`;
       }).join('');
@@ -371,15 +656,18 @@
       if (info.erro) { mostrarToast(info.erro, 'erro'); return; }
       salonInfo = info;
 
-      document.getElementById('salao-nome').textContent = info.estabelecimento.nome;
-      document.getElementById('hdr-salao').textContent = info.estabelecimento.nome;
-      document.title = 'Agendar — ' + info.estabelecimento.nome;
+      // Atualiza título e hero (carregados em background, visíveis após login)
+      const nomeEstab = info.estabelecimento.nome;
+      document.getElementById('salao-nome').textContent    = nomeEstab;
+      document.getElementById('hdr-salao') && (document.getElementById('hdr-salao').textContent = nomeEstab);
+      document.title = 'Agendar — ' + nomeEstab;
 
       if (info.estabelecimento.logo_url) {
-        document.getElementById('salao-logo').innerHTML = `<img src="${info.estabelecimento.logo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+        document.getElementById('salao-logo').innerHTML =
+          `<img src="${info.estabelecimento.logo_url}" style="width:100%;height:100%;object-fit:cover;">`;
       }
 
-      const ab = info.estabelecimento.horario_abertura || '08:00';
+      const ab = info.estabelecimento.horario_abertura  || '08:00';
       const fe = info.estabelecimento.horario_fechamento || '18:00';
       document.getElementById('salao-horario').textContent = `Funcionamento: ${ab} – ${fe}`;
 
@@ -416,6 +704,11 @@
       }
 
       carregarSlots();
+
+      // Verifica se o cliente já está logado (sessão)
+      if (carregarSessao()) {
+        entrarNoApp();
+      }
     }
 
     function selecionarProf(el, id) {
