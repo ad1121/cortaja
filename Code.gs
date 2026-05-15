@@ -91,11 +91,11 @@ function sheetParaObjetos(sheet) {
 
 function gerarLinkDashboard(id) {
   // Troque pela URL do seu GitHub Pages
-  return 'https://SEU_USUARIO.github.io/cortaja/dashboard.html?id=' + id;
+  return 'https://ad1121.github.io/cortaja/dashboard.html?id=' + id;
 }
 
 function gerarLinkBooking(id) {
-  return 'https://SEU_USUARIO.github.io/cortaja/booking.html?id=' + id;
+  return 'https://ad1121.github.io/cortaja/booking.html?id=' + id;
 }
 
 // ============================================================
