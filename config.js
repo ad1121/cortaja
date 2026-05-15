@@ -7,7 +7,7 @@ const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbxsZPsDSee9cfvEnQWOvrWuBi2QzpQBYdRnLDg3P_3SoJQaNIKiA_m9d5EhrF5D1dlx/exec',
 
   // ⚠️ Troque pelo seu usuário do GitHub
-  BASE_URL: 'https://SEU_USUARIO.github.io/cortaja',
+  BASE_URL: 'https://ad1121.github.io/cortaja/',
 
   // Chave Pix padrão (pode ser sobrescrita por estabelecimento)
   CHAVE_PIX_PADRAO: '61991944143',
