@@ -4,230 +4,168 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#080808">
-  <title>CortaJá — Painel</title>
+  <title>CortaJá — Admin</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <style>
-    /* ── Tabs ──────────────────────────────────────── */
-    .tab-bar { display:flex; gap:6px; padding:16px 20px 0; overflow-x:auto; scrollbar-width:none; }
-    .tab-bar::-webkit-scrollbar { display:none; }
-    .tab { padding:10px 18px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.08); background:var(--bg2); color:var(--text2); font-size:0.82rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:all var(--transition); font-family:var(--font-body); }
-    .tab.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+    .est-card { display:flex; gap:14px; align-items:flex-start; }
+    .est-info { flex:1; min-width:0; }
+    .est-nome { font-family:var(--font-title); font-weight:700; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .est-resp { font-size:0.82rem; color:var(--text2); margin-top:3px; }
 
-    /* ── Cards de profissional / serviço ──────────── */
-    .prof-card { display:flex; align-items:center; gap:14px; }
-    .prof-info { flex:1; }
-    .prof-nome { font-weight:600; font-size:0.95rem; }
-    .prof-esp { font-size:0.8rem; color:var(--text2); margin-top:2px; }
-    .serv-card { display:flex; align-items:center; justify-content:space-between; }
-    .serv-info { flex:1; }
-    .serv-nome { font-weight:600; font-size:0.95rem; }
-    .serv-dur { font-size:0.78rem; color:var(--text2); margin-top:2px; }
-    .serv-preco { font-family:var(--font-title); font-weight:700; color:var(--gold); font-size:1rem; }
+    /* Detalhes do estabelecimento */
+    .est-details { margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+    .est-detail-row { display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text2); }
+    .est-detail-row .icon { font-size:0.9rem; flex-shrink:0; width:18px; text-align:center; }
+    .est-detail-row strong { color:var(--text); font-weight:500; }
+    .est-detail-empty { font-size:0.75rem; color:var(--text3); font-style:italic; }
 
-    /* ── Cards de agendamento ─────────────────────── */
-    .ag-card { display:flex; flex-direction:column; gap:8px; }
-    .ag-header { display:flex; align-items:center; justify-content:space-between; }
-    .ag-hora { font-family:var(--font-title); font-size:1.2rem; font-weight:700; }
-    .ag-cliente { font-size:0.9rem; color:var(--text2); }
-    .ag-servico { font-size:0.8rem; color:var(--text3); margin-top:2px; }
-    .ag-actions { display:flex; gap:8px; margin-top:4px; }
+    /* Divider */
+    .est-divider { height:1px; background:rgba(255,255,255,0.06); margin:14px 0 10px; }
 
-    /* ── Skeleton loader ──────────────────────────── */
-    .skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius-sm); }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .sk-card { height:90px; margin-bottom:10px; border-radius:var(--radius-md); }
-    .sk-card-tall { height:120px; margin-bottom:10px; border-radius:var(--radius-md); }
+    /* Mini stats */
+    .est-stats { display:flex; gap:8px; }
+    .est-stat { flex:1; background:var(--bg3); border-radius:var(--radius-sm); padding:10px 8px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
+    .est-stat-val { font-family:var(--font-title); font-size:1.15rem; font-weight:700; color:var(--gold); }
+    .est-stat-val.zero { color:var(--text3); }
+    .est-stat-lbl { font-size:0.62rem; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:0.05em; }
 
-    /* ── Resumo do dia ────────────────────────────── */
-    .resumo-dia { display:flex; gap:10px; margin-bottom:16px; }
-    .resumo-stat { flex:1; background:var(--bg2); border-radius:var(--radius-md); padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
-    .resumo-stat-val { font-family:var(--font-title); font-size:1.4rem; font-weight:700; color:var(--gold); }
-    .resumo-stat-lbl { font-size:0.72rem; color:var(--text2); margin-top:2px; }
+    /* Links */
+    .est-links { display:flex; flex-direction:column; gap:6px; margin-top:14px; }
+    .link-box { background:var(--bg3); border-radius:var(--radius-sm); padding:10px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.06); transition:background var(--transition); }
+    .link-box:active { background:var(--bg4); }
+    .link-label { font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:2px; }
+    .link-url { font-size:0.78rem; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+    .copy-btn { color:var(--text2); flex-shrink:0; background:none; border:none; cursor:pointer; font-size:0.85rem; }
+    .est-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+
+    /* Pix destaque */
+    .pix-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2);
+      border-radius:8px; padding:4px 10px; font-size:0.78rem;
+      color:var(--gold); font-weight:500; margin-top:4px;
+    }
+
+    /* Agendamentos badge */
+    .ag-count-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      background:rgba(82,192,122,0.1); border:1px solid rgba(82,192,122,0.2);
+      border-radius:8px; padding:3px 8px; font-size:0.72rem; color:var(--green);
+      font-weight:600;
+    }
   </style>
 </head>
 <body>
-  <!-- Loading overlay leve — só bloqueia na init, não em cada req -->
-  <div id="loading-overlay" style="display:none;"><div class="spinner"></div></div>
+  <div id="loading-overlay"><div class="spinner"></div></div>
+
+  <!-- PWA Banner -->
+  <div id="pwa-banner">
+    <div class="pwa-icon">✂️</div>
+    <div class="pwa-text">
+      <h4>Instalar CortaJá</h4>
+      <p>Acesse mais rápido pela tela inicial</p>
+    </div>
+    <div class="pwa-actions">
+      <button class="btn btn-primary btn-sm" id="pwa-install-btn">Instalar</button>
+      <button class="btn btn-ghost btn-sm" id="pwa-dismiss-btn">Depois</button>
+    </div>
+  </div>
 
   <div class="page">
+    <!-- Header -->
     <header class="header">
       <div class="header-inner">
         <div class="logo">Corta<span>Já</span></div>
-        <div id="salao-nome" style="font-size:0.82rem;color:var(--text2);">Carregando...</div>
+        <span class="badge badge-gold">Admin</span>
       </div>
     </header>
 
-    <!-- Tabs -->
-    <div class="tab-bar">
-      <button class="tab active" data-tab="agenda">📅 Agenda</button>
-      <button class="tab" data-tab="cabeleireiros">✂️ Profissionais</button>
-      <button class="tab" data-tab="servicos">💈 Serviços</button>
-      <button class="tab" data-tab="produtos">🧴 Produtos</button>
-      <button class="tab" data-tab="config">⚙️ Config</button>
-    </div>
-
-    <!-- ── AGENDA ──────────────────────────────────────── -->
-    <div id="tab-agenda" class="section">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <input type="date" class="input" id="data-agenda" style="flex:1;">
-        <button class="btn btn-ghost btn-sm" id="btn-atualizar" title="Atualizar">🔄</button>
-      </div>
-
-      <!-- Resumo rápido do dia -->
-      <div class="resumo-dia" id="resumo-dia" style="display:none;">
-        <div class="resumo-stat">
-          <div class="resumo-stat-val" id="rstat-total">0</div>
-          <div class="resumo-stat-lbl">Total</div>
+    <!-- Stats globais -->
+    <div class="section" id="stats-section">
+      <div class="grid-2">
+        <div class="stat-card fade-in">
+          <div class="stat-value" id="stat-total">–</div>
+          <div class="stat-label">Salões</div>
         </div>
-        <div class="resumo-stat">
-          <div class="resumo-stat-val" id="rstat-confirmados" style="color:var(--green);">0</div>
-          <div class="resumo-stat-lbl">Confirmados</div>
+        <div class="stat-card fade-in" style="animation-delay:.08s">
+          <div class="stat-value" id="stat-ativos">–</div>
+          <div class="stat-label">Ativos</div>
         </div>
-        <div class="resumo-stat">
-          <div class="resumo-stat-val" id="rstat-aguardando" style="color:var(--gold);">0</div>
-          <div class="resumo-stat-lbl">Aguard. Pix</div>
-        </div>
-      </div>
-
-      <div class="stack" id="lista-agendamentos">
-        <div class="skeleton sk-card-tall"></div>
-        <div class="skeleton sk-card-tall"></div>
-        <div class="skeleton sk-card"></div>
       </div>
     </div>
 
-    <!-- ── PROFISSIONAIS ───────────────────────────────── -->
-    <div id="tab-cabeleireiros" class="section" style="display:none;">
+    <!-- Lista de estabelecimentos -->
+    <div class="section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="section-title" style="margin:0">Profissionais</div>
-        <button class="btn btn-primary btn-sm" id="btn-novo-prof">+ Novo</button>
+        <div class="section-title" style="margin:0">Estabelecimentos</div>
+        <button class="btn btn-primary btn-sm" id="btn-novo">+ Novo</button>
       </div>
-      <div class="stack" id="lista-prof">
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-      </div>
-    </div>
-
-    <!-- ── SERVIÇOS ────────────────────────────────────── -->
-    <div id="tab-servicos" class="section" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="section-title" style="margin:0">Serviços</div>
-        <button class="btn btn-primary btn-sm" id="btn-novo-serv">+ Novo</button>
-      </div>
-      <div class="stack" id="lista-serv">
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-      </div>
-    </div>
-
-    <!-- ── PRODUTOS ────────────────────────────────────── -->
-    <div id="tab-produtos" class="section" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="section-title" style="margin:0">Produtos</div>
-        <button class="btn btn-primary btn-sm" id="btn-novo-prod">+ Novo</button>
-      </div>
-      <div class="stack" id="lista-prod">
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-      </div>
-    </div>
-
-    <!-- ── CONFIG ──────────────────────────────────────── -->
-    <div id="tab-config" class="section" style="display:none;">
-      <div class="section-title">Configurações do Salão</div>
-      <div class="stack">
-        <div class="card">
-          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;">Link de agendamento para compartilhar com clientes:</p>
-          <div class="link-box" id="link-booking-box" style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;">
-            <div id="link-booking-url" style="font-size:0.82rem;color:var(--gold);flex:1;word-break:break-all;"></div>
-            <button onclick="copiarLink()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1rem;">📋</button>
-          </div>
-          <button class="btn btn-outline btn-full" style="margin-top:12px;" onclick="compartilharLink()">Compartilhar Link</button>
-        </div>
+      <div class="stack" id="lista-est">
+        <div class="empty"><div class="empty-icon">💈</div><p>Nenhum salão cadastrado ainda</p></div>
       </div>
     </div>
   </div>
 
-  <!-- ── Modal: Novo Profissional ───────────────────────── -->
-  <div class="modal-overlay" id="modal-prof">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h3 class="modal-title">Novo Profissional</h3>
-      <div class="stack">
-        <div class="input-group">
-          <label class="input-label">Nome *</label>
-          <input class="input" id="fp-nome" placeholder="Nome do profissional" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Especialidades</label>
-          <input class="input" id="fp-esp" placeholder="Ex: Degradê, Barba, Navalhado" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Foto (URL da imagem)</label>
-          <input class="input" id="fp-foto" placeholder="https://..." type="url">
-        </div>
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-prof')">Cancelar</button>
-          <button class="btn btn-primary btn-full" id="btn-salvar-prof">Salvar</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Início
+    </button>
+    <button class="nav-item" id="nav-relatorios">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Relatórios
+    </button>
+    <button class="nav-item" id="nav-config">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Config
+    </button>
+  </nav>
 
-  <!-- ── Modal: Novo Serviço ────────────────────────────── -->
-  <div class="modal-overlay" id="modal-serv">
+  <!-- Modal: Novo Estabelecimento -->
+  <div class="modal-overlay" id="modal-novo">
     <div class="modal">
       <div class="modal-handle"></div>
-      <h3 class="modal-title">Novo Serviço</h3>
+      <h3 class="modal-title">Novo Estabelecimento</h3>
       <div class="stack">
         <div class="input-group">
-          <label class="input-label">Nome do Serviço *</label>
-          <input class="input" id="fs-nome" placeholder="Ex: Corte Degradê" type="text">
+          <label class="input-label">Nome do Salão *</label>
+          <input class="input" id="f-nome" placeholder="Ex: Barbearia Elite" type="text">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Responsável *</label>
+          <input class="input" id="f-resp" placeholder="Nome completo" type="text">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Telefone / WhatsApp *</label>
+          <input class="input" id="f-tel" placeholder="(61) 99999-9999" type="tel">
+        </div>
+        <div class="input-group">
+          <label class="input-label">E-mail</label>
+          <input class="input" id="f-email" placeholder="email@exemplo.com" type="email">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Endereço</label>
+          <input class="input" id="f-end" placeholder="Rua, número, bairro" type="text">
         </div>
         <div class="grid-2">
           <div class="input-group">
-            <label class="input-label">Preço (R$)</label>
-            <input class="input" id="fs-preco" placeholder="0,00" type="number" step="0.01" min="0">
+            <label class="input-label">Abre</label>
+            <input class="input" id="f-abre" type="time" value="08:00">
           </div>
           <div class="input-group">
-            <label class="input-label">Duração (min)</label>
-            <input class="input" id="fs-dur" placeholder="30" type="number" min="15" step="15">
+            <label class="input-label">Fecha</label>
+            <input class="input" id="f-fecha" type="time" value="18:00">
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-serv')">Cancelar</button>
-          <button class="btn btn-primary btn-full" id="btn-salvar-serv">Salvar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Modal: Novo Produto ────────────────────────────── -->
-  <div class="modal-overlay" id="modal-prod">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h3 class="modal-title">Novo Produto</h3>
-      <div class="stack">
         <div class="input-group">
-          <label class="input-label">Nome *</label>
-          <input class="input" id="fpd-nome" placeholder="Ex: Pomada Modeladora" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Descrição</label>
-          <input class="input" id="fpd-desc" placeholder="Breve descrição" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Preço (R$)</label>
-          <input class="input" id="fpd-preco" placeholder="0,00" type="number" step="0.01" min="0">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Foto (URL)</label>
-          <input class="input" id="fpd-foto" placeholder="https://..." type="url">
+          <label class="input-label">Chave Pix</label>
+          <input class="input" id="f-pix" placeholder="Telefone, CPF ou e-mail" type="text">
         </div>
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-prod')">Cancelar</button>
-          <button class="btn btn-primary btn-full" id="btn-salvar-prod">Salvar</button>
+          <button class="btn btn-ghost btn-full" id="btn-cancelar-modal">Cancelar</button>
+          <button class="btn btn-primary btn-full" id="btn-salvar-est">Salvar</button>
         </div>
       </div>
     </div>
@@ -235,402 +173,272 @@
 
   <script src="config.js"></script>
   <script>
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
-
-    const params = new URLSearchParams(location.search);
-    const SALON_ID = params.get('id');
-
-    if (!SALON_ID) {
-      document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p style="margin-top:8px;">Este link não possui um ID de salão válido.</p></div>';
+    // ── PWA ────────────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
     }
 
-    // ── Cache local para evitar chamadas repetidas ─────────────
-    const cache = { prof: null, serv: null, prod: null };
-
-    // ── TABS ────────────────────────────────────────────────────
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.onclick = () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelectorAll('[id^="tab-"]').forEach(s => s.style.display = 'none');
-        document.getElementById('tab-' + tab.dataset.tab).style.display = '';
-        if (tab.dataset.tab === 'cabeleireiros') carregarProf();
-        if (tab.dataset.tab === 'servicos') carregarServ();
-        if (tab.dataset.tab === 'produtos') carregarProd();
-        if (tab.dataset.tab === 'agenda') carregarAgenda();
-      };
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwa-banner').classList.add('show');
     });
+    document.getElementById('pwa-install-btn').onclick = async () => {
+      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+      document.getElementById('pwa-banner').classList.remove('show');
+    };
+    document.getElementById('pwa-dismiss-btn').onclick = () => {
+      document.getElementById('pwa-banner').classList.remove('show');
+    };
 
-    // ── FECHAR MODAIS ───────────────────────────────────────────
-    function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
-    document.querySelectorAll('.modal-overlay').forEach(m => {
-      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-    });
-
-    // ── SKELETON helpers ─────────────────────────────────────────
-    function skeletons(containerId, tall = false) {
-      const cls = tall ? 'sk-card-tall' : 'sk-card';
-      document.getElementById(containerId).innerHTML =
-        `<div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div>`;
-    }
-
-    // ── INIT ─────────────────────────────────────────────────────
-    // Carrega info do salão e agenda em paralelo para ser rápido
-    async function init() {
+    // ── CARREGAR LISTA ─────────────────────────────────────
+    async function carregarEstabelecimentos() {
       mostrarLoading(true);
-
-      // Dispara as duas chamadas ao mesmo tempo
-      const [info] = await Promise.all([
-        api({ action: 'getEstabelecimento', id: SALON_ID }),
-      ]);
-
+      const lista = await api({ action: 'listarEstabelecimentos' });
       mostrarLoading(false);
 
-      if (info.erro) { mostrarToast(info.erro, 'erro'); return; }
+      const arr = Array.isArray(lista) ? lista : [];
+      const ativos = arr.filter(e => e.status === 'ativo');
+      document.getElementById('stat-total').textContent = arr.length;
+      document.getElementById('stat-ativos').textContent = ativos.length;
 
-      document.getElementById('salao-nome').textContent = info.nome;
-      document.title = 'CortaJá — ' + info.nome;
-
-      const linkUrl = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
-      const el = document.getElementById('link-booking-url');
-      if (el) el.textContent = linkUrl;
-
-      // Data padrão hoje e carrega agenda sem bloquear a tela
-      document.getElementById('data-agenda').value = dataHoje();
-      carregarAgenda();
-    }
-
-    function copiarLink() {
-      const url = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
-      navigator.clipboard.writeText(url).then(() => mostrarToast('Link copiado!', 'sucesso'));
-    }
-
-    function compartilharLink() {
-      const url = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
-      if (navigator.share) {
-        navigator.share({ title: 'Agende seu corte!', url });
-      } else {
-        copiarLink();
-      }
-    }
-
-    // ── AGENDA ───────────────────────────────────────────────────
-    document.getElementById('data-agenda').onchange = carregarAgenda;
-    document.getElementById('btn-atualizar').onclick = carregarAgenda;
-
-    // Auto-atualiza a cada 60 segundos quando a aba agenda está visível
-    setInterval(() => {
-      const agendaTab = document.getElementById('tab-agenda');
-      if (agendaTab && agendaTab.style.display !== 'none') carregarAgenda(true);
-    }, 60000);
-
-    async function carregarAgenda(silencioso = false) {
-      const data = document.getElementById('data-agenda').value;
-      if (!data) return;
-
-      if (!silencioso) skeletons('lista-agendamentos', true);
-
-      // ── BUG CORRIGIDO: Normaliza a data para comparação ────────
-      // O Sheets pode retornar a.data como objeto Date ou string no
-      // formato "YYYY-MM-DD". Normalizamos tudo para string YYYY-MM-DD.
-      const lista = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
-
-      const filtrados = Array.isArray(lista)
-        ? lista.filter(a => normalizarData(a.data) === data)
-        : [];
-
-      const container = document.getElementById('lista-agendamentos');
-      const resumo = document.getElementById('resumo-dia');
-
-      if (!filtrados.length) {
-        resumo.style.display = 'none';
-        container.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Sem agendamentos nesta data</p></div>';
+      const container = document.getElementById('lista-est');
+      if (!arr.length) {
+        container.innerHTML = '<div class="empty"><div class="empty-icon">💈</div><p>Nenhum salão cadastrado ainda</p></div>';
         return;
       }
 
-      // Ordena por horário
-      filtrados.sort((a, b) => {
-        const ha = normalizarHorario(a.horario);
-        const hb = normalizarHorario(b.horario);
-        return ha > hb ? 1 : -1;
-      });
+      container.innerHTML = arr.map((e, idx) => {
+        const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+        const hoje = new Date();
+        const diaAtual = diasSemana[hoje.getDay()];
 
-      // Atualiza resumo rápido
-      const total       = filtrados.filter(a => a.status !== 'expirado' && a.status !== 'cancelado').length;
-      const confirmados = filtrados.filter(a => a.status === 'confirmado').length;
-      const aguardando  = filtrados.filter(a => a.status === 'selecionando').length;
-      document.getElementById('rstat-total').textContent       = total;
-      document.getElementById('rstat-confirmados').textContent = confirmados;
-      document.getElementById('rstat-aguardando').textContent  = aguardando;
-      resumo.style.display = 'flex';
+        const horarioAb = e.horario_abertura || '08:00';
+        const horarioFe = e.horario_fechamento || '18:00';
 
-      const statusLabel = {
-        confirmado:   ['badge-green', 'Confirmado'],
-        selecionando: ['badge-gold',  'Aguardando Pix'],
-        cancelado:    ['badge-red',   'Cancelado'],
-        expirado:     ['badge-grey',  'Expirado']
-      };
+        const agora = hoje.getHours() * 60 + hoje.getMinutes();
+        const [hAb, mAb] = horarioAb.split(':').map(Number);
+        const [hFe, mFe] = horarioFe.split(':').map(Number);
+        const abertoAgora = agora >= hAb * 60 + mAb && agora < hFe * 60 + mFe;
 
-      container.innerHTML = filtrados.map(ag => {
-        const [cls, lbl] = statusLabel[ag.status] || ['badge-grey', ag.status];
-        const horario = normalizarHorario(ag.horario);
+        const chavePix = e.chave_pix || CONFIG.CHAVE_PIX_PADRAO;
+        const email = e.email || '';
 
-        // Busca nomes de profissional e serviço no cache
-        const profNome = buscaNomeCache('prof', ag.id_cabeleireiro);
-        const servNome = buscaNomeCache('serv', ag.id_servico);
+        // Contagens de agendamentos
+        const agHoje   = e.agendamentos_hoje   !== undefined ? e.agendamentos_hoje   : null;
+        const agTotal  = e.total_agendamentos  !== undefined ? e.total_agendamentos  : null;
+        const agMes    = e.agendamentos_mes    !== undefined ? e.agendamentos_mes    : null;
+        const recMes   = e.receita_mes         !== undefined ? e.receita_mes         : null;
+
+        // Sempre renderiza os 3 stats, mesmo sem dados (mostra "–")
+        const statHoje  = agHoje  !== null ? agHoje  : '–';
+        const statMes   = agMes   !== null ? agMes   : (agTotal !== null ? agTotal : '–');
+        const statRec   = recMes  !== null ? formatarMoeda(recMes) : '–';
+        const statHojeZero = agHoje === 0;
+        const statMesZero  = (agMes === 0 || agTotal === 0);
 
         return `
-          <div class="card ag-card fade-in">
-            <div class="ag-header">
-              <div class="ag-hora">${horario}</div>
-              <span class="badge ${cls}">${lbl}</span>
+        <div class="card card-gold fade-in" style="animation-delay:${idx * 0.06}s">
+
+          <!-- Cabeçalho do card -->
+          <div class="est-card">
+            <div style="width:50px;height:50px;border-radius:10px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:1px solid rgba(201,168,76,0.15);">
+              ${e.logo_url ? `<img src="${e.logo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : '💈'}
             </div>
-            <div class="ag-cliente">👤 ${ag.nome_cliente || '–'}</div>
-            <div class="ag-cliente">📱 ${ag.telefone_cliente || '–'}</div>
-            ${profNome ? `<div class="ag-servico">✂️ ${profNome}</div>` : ''}
-            ${servNome ? `<div class="ag-servico">💈 ${servNome}</div>` : ''}
-            <div class="ag-actions">
-              ${ag.status === 'selecionando' ? `
-                <button class="btn btn-primary btn-sm" onclick="confirmarPag('${ag.id}')">✓ Confirmar Pagamento</button>
-              ` : ''}
-              ${ag.status === 'confirmado' ? `
-                <button class="btn btn-danger btn-sm" onclick="cancelarAg('${ag.id}')">✕ Cancelar</button>
-              ` : ''}
+            <div class="est-info">
+              <div class="est-nome">${e.nome}</div>
+              <div class="est-resp">${e.responsavel}</div>
+              <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+                ${e.status === 'ativo'
+                  ? '<span class="badge badge-green">Ativo</span>'
+                  : '<span class="badge badge-grey">Inativo</span>'}
+                ${abertoAgora
+                  ? `<span class="badge badge-green" style="font-size:0.62rem;">Aberto agora</span>`
+                  : `<span class="badge badge-grey" style="font-size:0.62rem;">Fechado · ${diaAtual}</span>`}
+              </div>
             </div>
-          </div>`;
+          </div>
+
+          <div class="est-divider"></div>
+
+          <!-- Informações detalhadas -->
+          <div class="est-details">
+
+            <!-- Telefone + E-mail -->
+            <div class="est-detail-row">
+              <span class="icon">📱</span>
+              <div style="flex:1;min-width:0;">
+                <strong>${e.telefone || '–'}</strong>
+                ${email
+                  ? `<span style="color:var(--text3);margin:0 4px;">·</span><span style="font-size:0.78rem;">${email}</span>`
+                  : `<span class="est-detail-empty" style="margin-left:6px;">sem e-mail</span>`}
+              </div>
+            </div>
+
+            <!-- Horário de funcionamento -->
+            <div class="est-detail-row">
+              <span class="icon">🕐</span>
+              <strong>${horarioAb} – ${horarioFe}</strong>
+              <span style="font-size:0.72rem;color:var(--text3);margin-left:4px;">(${diaAtual})</span>
+              ${abertoAgora
+                ? `<span style="font-size:0.7rem;color:var(--green);margin-left:4px;">● aberto</span>`
+                : `<span style="font-size:0.7rem;color:var(--text3);margin-left:4px;">○ fechado</span>`}
+            </div>
+
+            <!-- Endereço -->
+            ${e.endereco
+              ? `<div class="est-detail-row">
+                  <span class="icon">📍</span>
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.endereco}</span>
+                </div>`
+              : `<div class="est-detail-row">
+                  <span class="icon">📍</span>
+                  <span class="est-detail-empty">endereço não informado</span>
+                </div>`}
+
+            <!-- Chave Pix — sempre visível com destaque -->
+            <div class="est-detail-row" style="margin-top:2px;">
+              <span class="icon">💠</span>
+              <div>
+                <span style="font-size:0.72rem;color:var(--text3);margin-right:4px;">Pix</span>
+                <span class="pix-badge">🔑 ${chavePix}</span>
+              </div>
+            </div>
+
+            <!-- Data de cadastro -->
+            ${e.data_cadastro
+              ? `<div class="est-detail-row">
+                  <span class="icon">📅</span>
+                  <span>Cadastrado em <strong>${formatarData(String(e.data_cadastro).substring(0,10))}</strong></span>
+                </div>`
+              : ''}
+          </div>
+
+          <div class="est-divider"></div>
+
+          <!-- Mini stats de agendamentos — sempre renderizados -->
+          <div style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Agendamentos</span>
+            ${agHoje !== null && agHoje > 0
+              ? `<span class="ag-count-badge">✦ ${agHoje} hoje</span>`
+              : ''}
+          </div>
+          <div class="est-stats">
+            <div class="est-stat">
+              <div class="est-stat-val ${statHojeZero ? 'zero' : ''}">${statHoje}</div>
+              <div class="est-stat-lbl">Hoje</div>
+            </div>
+            <div class="est-stat">
+              <div class="est-stat-val ${statMesZero ? 'zero' : ''}">${statMes}</div>
+              <div class="est-stat-lbl">${agMes !== null ? 'Este mês' : 'Total'}</div>
+            </div>
+            <div class="est-stat">
+              <div class="est-stat-val" style="${recMes !== null ? '' : 'color:var(--text3);font-size:0.9rem;'}">${statRec}</div>
+              <div class="est-stat-lbl">Receita mês</div>
+            </div>
+          </div>
+
+          <div class="est-divider"></div>
+
+          <!-- Links -->
+          <div class="est-links">
+            <div class="link-box" onclick="copiar('${e.link_dashboard}', 'Link do painel copiado!')">
+              <div style="flex:1;min-width:0;">
+                <span class="link-label">Painel do Responsável</span>
+                <span class="link-url">${e.link_dashboard}</span>
+              </div>
+              <button class="copy-btn" title="Copiar">📋</button>
+            </div>
+            <div class="link-box" onclick="copiar('${e.link_booking}', 'Link de agendamento copiado!')">
+              <div style="flex:1;min-width:0;">
+                <span class="link-label">Link de Agendamento</span>
+                <span class="link-url">${e.link_booking}</span>
+              </div>
+              <button class="copy-btn" title="Copiar">📋</button>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="est-actions">
+            <button class="btn btn-ghost btn-sm" onclick="compartilhar('${e.link_booking}', '${e.nome}')">🔗 Compartilhar</button>
+            <button class="btn btn-ghost btn-sm" onclick="abrirPainel('${e.link_dashboard}')">📊 Painel</button>
+            <button class="btn btn-danger btn-sm" onclick="deletarEst('${e.id}')">✕ Excluir</button>
+          </div>
+
+        </div>`;
       }).join('');
     }
 
-    // Normaliza campo data que pode vir como Date do Sheets ou string
-    function normalizarData(valor) {
-      if (!valor) return '';
-      if (valor instanceof Date) {
-        return valor.getFullYear() + '-' +
-          String(valor.getMonth() + 1).padStart(2, '0') + '-' +
-          String(valor.getDate()).padStart(2, '0');
-      }
-      // String pode vir como "2026-05-15T00:00:00Z" ou "2026-05-15"
-      return String(valor).substring(0, 10);
+    // ── HELPERS ────────────────────────────────────────────
+    function copiar(texto, msg) {
+      navigator.clipboard.writeText(texto).then(() => mostrarToast(msg, 'sucesso'));
     }
 
-    // Normaliza campo horário que pode vir como Date do Sheets ou string
-    function normalizarHorario(valor) {
-      if (!valor && valor !== 0) return '--:--';
-      if (typeof valor === 'string' && valor.indexOf(':') !== -1) return valor.substring(0, 5);
-      if (valor instanceof Date) {
-        return String(valor.getHours()).padStart(2, '0') + ':' + String(valor.getMinutes()).padStart(2, '0');
+    function compartilhar(url, nome) {
+      if (navigator.share) {
+        navigator.share({ title: 'Agende no ' + nome, url });
+      } else {
+        copiar(url, 'Link copiado!');
       }
-      if (typeof valor === 'number') {
-        const min = Math.round(valor * 24 * 60);
-        return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
-      }
-      return String(valor).substring(0, 5);
     }
 
-    // Busca nome de profissional/serviço no cache local
-    function buscaNomeCache(tipo, id) {
-      if (!id) return '';
-      if (tipo === 'prof' && cache.prof) {
-        const p = cache.prof.find(x => x.id === id);
-        return p ? p.nome : '';
-      }
-      if (tipo === 'serv' && cache.serv) {
-        const s = cache.serv.find(x => x.id === id);
-        return s ? s.nome_servico : '';
-      }
-      return '';
+    function abrirPainel(url) {
+      window.open(url, '_blank');
     }
 
-    async function confirmarPag(id) {
+    // ── MODAL ──────────────────────────────────────────────
+    document.getElementById('btn-novo').onclick = () => {
+      document.getElementById('modal-novo').classList.add('open');
+    };
+    document.getElementById('btn-cancelar-modal').onclick = () => {
+      document.getElementById('modal-novo').classList.remove('open');
+    };
+    document.getElementById('modal-novo').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal-novo'))
+        document.getElementById('modal-novo').classList.remove('open');
+    });
+
+    // ── SALVAR ─────────────────────────────────────────────
+    document.getElementById('btn-salvar-est').onclick = async () => {
+      const nome = document.getElementById('f-nome').value.trim();
+      const resp = document.getElementById('f-resp').value.trim();
+      const tel  = document.getElementById('f-tel').value.trim();
+      if (!nome || !resp || !tel) { mostrarToast('Preencha os campos obrigatórios', 'erro'); return; }
+
       mostrarLoading(true);
-      const r = await api({ action: 'confirmarPagamento', id });
+      const res = await api({
+        action: 'salvarEstabelecimento',
+        nome, responsavel: resp, telefone: tel,
+        email:              document.getElementById('f-email').value.trim(),
+        endereco:           document.getElementById('f-end').value.trim(),
+        horario_abertura:   document.getElementById('f-abre').value,
+        horario_fechamento: document.getElementById('f-fecha').value,
+        chave_pix:          document.getElementById('f-pix').value.trim() || CONFIG.CHAVE_PIX_PADRAO,
+      });
       mostrarLoading(false);
-      if (r.sucesso) { mostrarToast('Agendamento confirmado!', 'sucesso'); carregarAgenda(); }
-      else mostrarToast(r.erro || 'Erro', 'erro');
-    }
 
-    async function cancelarAg(id) {
-      if (!confirm('Cancelar este agendamento?')) return;
-      mostrarLoading(true);
-      await api({ action: 'cancelarAgendamento', id });
-      mostrarLoading(false);
-      mostrarToast('Agendamento cancelado', 'sucesso');
-      carregarAgenda();
-    }
-
-    // ── PROFISSIONAIS ─────────────────────────────────────────────
-    async function carregarProf(forcar = false) {
-      if (cache.prof && !forcar) { renderProf(cache.prof); return; }
-      skeletons('lista-prof');
-      const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
-      cache.prof = Array.isArray(lista) ? lista : [];
-      renderProf(cache.prof);
-    }
-
-    function renderProf(lista) {
-      const container = document.getElementById('lista-prof');
-      if (!lista.length) {
-        container.innerHTML = '<div class="empty"><div class="empty-icon">✂️</div><p>Nenhum profissional cadastrado</p></div>'; return;
+      if (res.sucesso) {
+        mostrarToast('Salão cadastrado com sucesso!', 'sucesso');
+        document.getElementById('modal-novo').classList.remove('open');
+        ['f-nome','f-resp','f-tel','f-email','f-end','f-pix'].forEach(id => document.getElementById(id).value = '');
+        carregarEstabelecimentos();
+      } else {
+        mostrarToast(res.erro || 'Erro ao salvar', 'erro');
       }
-      container.innerHTML = lista.map(p => `
-        <div class="card fade-in">
-          <div class="prof-card">
-            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
-              ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '✂️'}
-            </div>
-            <div class="prof-info">
-              <div class="prof-nome">${p.nome}</div>
-              <div class="prof-esp">${p.especialidades || 'Sem especialidades'}</div>
-            </div>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProf('${p.id}')">✕</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    document.getElementById('btn-novo-prof').onclick = () => document.getElementById('modal-prof').classList.add('open');
-    document.getElementById('btn-salvar-prof').onclick = async () => {
-      const nome = document.getElementById('fp-nome').value.trim();
-      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
-      mostrarLoading(true);
-      const r = await api({ action: 'salvarCabeleireiro', id_estabelecimento: SALON_ID, nome,
-        especialidades: document.getElementById('fp-esp').value.trim(),
-        foto_url: document.getElementById('fp-foto').value.trim() });
-      mostrarLoading(false);
-      if (r.sucesso) {
-        mostrarToast('Profissional cadastrado!', 'sucesso');
-        fecharModal('modal-prof');
-        cache.prof = null; // invalida cache
-        carregarProf(true);
-        ['fp-nome','fp-esp','fp-foto'].forEach(id => document.getElementById(id).value = '');
-      } else mostrarToast(r.erro || 'Erro', 'erro');
     };
 
-    async function deletarProf(id) {
-      if (!confirm('Excluir profissional?')) return;
-      await api({ action: 'deletarCabeleireiro', id });
-      cache.prof = null;
-      mostrarToast('Removido', 'sucesso');
-      carregarProf(true);
-    }
-
-    // ── SERVIÇOS ──────────────────────────────────────────────────
-    async function carregarServ(forcar = false) {
-      if (cache.serv && !forcar) { renderServ(cache.serv); return; }
-      skeletons('lista-serv');
-      const lista = await api({ action: 'listarServicos', id_estabelecimento: SALON_ID });
-      cache.serv = Array.isArray(lista) ? lista : [];
-      renderServ(cache.serv);
-    }
-
-    function renderServ(lista) {
-      const container = document.getElementById('lista-serv');
-      if (!lista.length) {
-        container.innerHTML = '<div class="empty"><div class="empty-icon">💈</div><p>Nenhum serviço cadastrado</p></div>'; return;
-      }
-      container.innerHTML = lista.map(s => `
-        <div class="card fade-in">
-          <div class="serv-card">
-            <div class="serv-info">
-              <div class="serv-nome">${s.nome_servico}</div>
-              <div class="serv-dur">${s.duracao_minutos} minutos</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div class="serv-preco">${formatarMoeda(s.preco)}</div>
-              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarServ('${s.id}')">✕</button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    document.getElementById('btn-novo-serv').onclick = () => document.getElementById('modal-serv').classList.add('open');
-    document.getElementById('btn-salvar-serv').onclick = async () => {
-      const nome = document.getElementById('fs-nome').value.trim();
-      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
+    // ── DELETAR ────────────────────────────────────────────
+    async function deletarEst(id) {
+      if (!confirm('Tem certeza que deseja excluir este salão?')) return;
       mostrarLoading(true);
-      const r = await api({ action: 'salvarServico', id_estabelecimento: SALON_ID, nome_servico: nome,
-        preco: document.getElementById('fs-preco').value,
-        duracao_minutos: document.getElementById('fs-dur').value || 30 });
+      await api({ action: 'deletarEstabelecimento', id });
       mostrarLoading(false);
-      if (r.sucesso) {
-        mostrarToast('Serviço cadastrado!', 'sucesso');
-        fecharModal('modal-serv');
-        cache.serv = null;
-        carregarServ(true);
-        ['fs-nome','fs-preco','fs-dur'].forEach(id => document.getElementById(id).value = '');
-      } else mostrarToast(r.erro || 'Erro', 'erro');
-    };
-
-    async function deletarServ(id) {
-      if (!confirm('Excluir serviço?')) return;
-      await api({ action: 'deletarServico', id });
-      cache.serv = null;
-      mostrarToast('Removido', 'sucesso');
-      carregarServ(true);
+      mostrarToast('Salão removido', 'sucesso');
+      carregarEstabelecimentos();
     }
 
-    // ── PRODUTOS ──────────────────────────────────────────────────
-    async function carregarProd(forcar = false) {
-      if (cache.prod && !forcar) { renderProd(cache.prod); return; }
-      skeletons('lista-prod');
-      const lista = await api({ action: 'listarProdutos', id_estabelecimento: SALON_ID });
-      cache.prod = Array.isArray(lista) ? lista : [];
-      renderProd(cache.prod);
-    }
-
-    function renderProd(lista) {
-      const container = document.getElementById('lista-prod');
-      if (!lista.length) {
-        container.innerHTML = '<div class="empty"><div class="empty-icon">🧴</div><p>Nenhum produto cadastrado</p></div>'; return;
-      }
-      container.innerHTML = lista.map(p => `
-        <div class="card fade-in">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:48px;height:48px;border-radius:14px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
-              ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '🧴'}
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:600;font-size:0.95rem;">${p.nome}</div>
-              <div style="font-size:0.78rem;color:var(--text2);">${p.descricao || ''}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="font-family:var(--font-title);font-weight:700;color:var(--gold);">${formatarMoeda(p.preco)}</div>
-              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProd('${p.id}')">✕</button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    document.getElementById('btn-novo-prod').onclick = () => document.getElementById('modal-prod').classList.add('open');
-    document.getElementById('btn-salvar-prod').onclick = async () => {
-      const nome = document.getElementById('fpd-nome').value.trim();
-      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
-      mostrarLoading(true);
-      const r = await api({ action: 'salvarProduto', id_estabelecimento: SALON_ID, nome,
-        descricao: document.getElementById('fpd-desc').value.trim(),
-        preco: document.getElementById('fpd-preco').value,
-        foto_url: document.getElementById('fpd-foto').value.trim() });
-      mostrarLoading(false);
-      if (r.sucesso) {
-        mostrarToast('Produto cadastrado!', 'sucesso');
-        fecharModal('modal-prod');
-        cache.prod = null;
-        carregarProd(true);
-        ['fpd-nome','fpd-desc','fpd-preco','fpd-foto'].forEach(id => document.getElementById(id).value = '');
-      } else mostrarToast(r.erro || 'Erro', 'erro');
-    };
-
-    async function deletarProd(id) {
-      if (!confirm('Excluir produto?')) return;
-      await api({ action: 'deletarProduto', id });
-      cache.prod = null;
-      mostrarToast('Removido', 'sucesso');
-      carregarProd(true);
-    }
-
-    init();
+    carregarEstabelecimentos();
   </script>
 </body>
 </html>
