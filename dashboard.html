@@ -15,10 +15,17 @@
     .tab.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
 
     /* ── Cards de profissional / serviço ──────────── */
-    .prof-card { display:flex; align-items:center; gap:14px; }
+    .prof-card { display:flex; align-items:flex-start; gap:14px; }
     .prof-info { flex:1; }
     .prof-nome { font-weight:600; font-size:0.95rem; }
     .prof-esp { font-size:0.8rem; color:var(--text2); margin-top:2px; }
+    /* Detalhes extras do profissional */
+    .prof-details { display:flex; flex-direction:column; gap:4px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); }
+    .prof-detail-row { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--text2); }
+    .prof-detail-row span { color:var(--text1); }
+    /* Badge de contagem de agendamentos */
+    .prof-ag-badge { display:inline-flex; align-items:center; gap:4px; background:var(--gold-dim); border:1px solid rgba(201,168,76,0.3); color:var(--gold); border-radius:99px; padding:2px 10px; font-size:0.73rem; font-weight:600; margin-top:6px; }
+
     .serv-card { display:flex; align-items:center; justify-content:space-between; }
     .serv-info { flex:1; }
     .serv-nome { font-weight:600; font-size:0.95rem; }
@@ -32,12 +39,18 @@
     .ag-cliente { font-size:0.9rem; color:var(--text2); }
     .ag-servico { font-size:0.8rem; color:var(--text3); margin-top:2px; }
     .ag-actions { display:flex; gap:8px; margin-top:4px; }
+    /* Linha de informação dentro do card de agendamento */
+    .ag-info-row { display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text2); }
+    .ag-info-row strong { color:var(--text1); font-weight:500; }
+    .ag-divider { height:1px; background:rgba(255,255,255,0.05); margin:4px 0; }
+    /* Badge Pix dentro do card */
+    .pix-inline { display:inline-flex; align-items:center; gap:5px; background:rgba(0,180,120,0.08); border:1px solid rgba(0,180,120,0.2); color:#4ecb9e; border-radius:8px; padding:3px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; }
 
     /* ── Skeleton loader ──────────────────────────── */
     .skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius-sm); }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .sk-card { height:90px; margin-bottom:10px; border-radius:var(--radius-md); }
-    .sk-card-tall { height:120px; margin-bottom:10px; border-radius:var(--radius-md); }
+    .sk-card-tall { height:140px; margin-bottom:10px; border-radius:var(--radius-md); }
 
     /* ── Resumo do dia ────────────────────────────── */
     .resumo-dia { display:flex; gap:10px; margin-bottom:16px; }
@@ -47,7 +60,6 @@
   </style>
 </head>
 <body>
-  <!-- Loading overlay leve — só bloqueia na init, não em cada req -->
   <div id="loading-overlay" style="display:none;"><div class="spinner"></div></div>
 
   <div class="page">
@@ -164,6 +176,28 @@
           <input class="input" id="fp-esp" placeholder="Ex: Degradê, Barba, Navalhado" type="text">
         </div>
         <div class="input-group">
+          <label class="input-label">E-mail</label>
+          <input class="input" id="fp-email" placeholder="email@exemplo.com" type="email">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Telefone / WhatsApp</label>
+          <input class="input" id="fp-telefone" placeholder="(61) 99999-9999" type="tel">
+        </div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label class="input-label">Entrada</label>
+            <input class="input" id="fp-entrada" placeholder="08:00" type="time">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Saída</label>
+            <input class="input" id="fp-saida" placeholder="18:00" type="time">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Chave Pix</label>
+          <input class="input" id="fp-pix" placeholder="CPF, e-mail ou telefone" type="text">
+        </div>
+        <div class="input-group">
           <label class="input-label">Foto (URL da imagem)</label>
           <input class="input" id="fp-foto" placeholder="https://..." type="url">
         </div>
@@ -275,15 +309,11 @@
     }
 
     // ── INIT ─────────────────────────────────────────────────────
-    // Carrega info do salão e agenda em paralelo para ser rápido
     async function init() {
       mostrarLoading(true);
-
-      // Dispara as duas chamadas ao mesmo tempo
       const [info] = await Promise.all([
         api({ action: 'getEstabelecimento', id: SALON_ID }),
       ]);
-
       mostrarLoading(false);
 
       if (info.erro) { mostrarToast(info.erro, 'erro'); return; }
@@ -295,7 +325,6 @@
       const el = document.getElementById('link-booking-url');
       if (el) el.textContent = linkUrl;
 
-      // Data padrão hoje e carrega agenda sem bloquear a tela
       document.getElementById('data-agenda').value = dataHoje();
       carregarAgenda();
     }
@@ -318,7 +347,6 @@
     document.getElementById('data-agenda').onchange = carregarAgenda;
     document.getElementById('btn-atualizar').onclick = carregarAgenda;
 
-    // Auto-atualiza a cada 60 segundos quando a aba agenda está visível
     setInterval(() => {
       const agendaTab = document.getElementById('tab-agenda');
       if (agendaTab && agendaTab.style.display !== 'none') carregarAgenda(true);
@@ -330,9 +358,6 @@
 
       if (!silencioso) skeletons('lista-agendamentos', true);
 
-      // ── BUG CORRIGIDO: Normaliza a data para comparação ────────
-      // O Sheets pode retornar a.data como objeto Date ou string no
-      // formato "YYYY-MM-DD". Normalizamos tudo para string YYYY-MM-DD.
       const lista = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
 
       const filtrados = Array.isArray(lista)
@@ -348,14 +373,12 @@
         return;
       }
 
-      // Ordena por horário
       filtrados.sort((a, b) => {
         const ha = normalizarHorario(a.horario);
         const hb = normalizarHorario(b.horario);
         return ha > hb ? 1 : -1;
       });
 
-      // Atualiza resumo rápido
       const total       = filtrados.filter(a => a.status !== 'expirado' && a.status !== 'cancelado').length;
       const confirmados = filtrados.filter(a => a.status === 'confirmado').length;
       const aguardando  = filtrados.filter(a => a.status === 'selecionando').length;
@@ -376,8 +399,21 @@
         const horario = normalizarHorario(ag.horario);
 
         // Busca nomes de profissional e serviço no cache
-        const profNome = buscaNomeCache('prof', ag.id_cabeleireiro);
-        const servNome = buscaNomeCache('serv', ag.id_servico);
+        const profNome  = buscaNomeCache('prof', ag.id_cabeleireiro);
+        const servNome  = buscaNomeCache('serv', ag.id_servico);
+
+        // ── NOVO: Informações extras do agendamento ──────────────
+        const emailCliente = ag.email_cliente ? `
+          <div class="ag-info-row">✉️ <strong>${ag.email_cliente}</strong></div>` : '';
+        const pixChave = ag.chave_pix || CONFIG.CHAVE_PIX_PADRAO;
+        const pixBadge = ag.status === 'selecionando' ? `
+          <div class="ag-info-row">
+            💳 Pix:
+            <span class="pix-inline" onclick="copiarTexto('${pixChave}', 'Chave Pix copiada!')" title="Copiar chave Pix">
+              ${pixChave} 📋
+            </span>
+          </div>` : '';
+        // ────────────────────────────────────────────────────────
 
         return `
           <div class="card ag-card fade-in">
@@ -385,10 +421,13 @@
               <div class="ag-hora">${horario}</div>
               <span class="badge ${cls}">${lbl}</span>
             </div>
-            <div class="ag-cliente">👤 ${ag.nome_cliente || '–'}</div>
-            <div class="ag-cliente">📱 ${ag.telefone_cliente || '–'}</div>
-            ${profNome ? `<div class="ag-servico">✂️ ${profNome}</div>` : ''}
-            ${servNome ? `<div class="ag-servico">💈 ${servNome}</div>` : ''}
+            <div class="ag-divider"></div>
+            <div class="ag-info-row">👤 <strong>${ag.nome_cliente || '–'}</strong></div>
+            <div class="ag-info-row">📱 <strong>${ag.telefone_cliente || '–'}</strong></div>
+            ${emailCliente}
+            ${profNome ? `<div class="ag-info-row">✂️ <strong>${profNome}</strong></div>` : ''}
+            ${servNome ? `<div class="ag-info-row">💈 <strong>${servNome}</strong></div>` : ''}
+            ${pixBadge}
             <div class="ag-actions">
               ${ag.status === 'selecionando' ? `
                 <button class="btn btn-primary btn-sm" onclick="confirmarPag('${ag.id}')">✓ Confirmar Pagamento</button>
@@ -401,7 +440,11 @@
       }).join('');
     }
 
-    // Normaliza campo data que pode vir como Date do Sheets ou string
+    // ── Utilitário: copiar texto qualquer ─────────────────────
+    function copiarTexto(texto, mensagem) {
+      navigator.clipboard.writeText(texto).then(() => mostrarToast(mensagem || 'Copiado!', 'sucesso'));
+    }
+
     function normalizarData(valor) {
       if (!valor) return '';
       if (valor instanceof Date) {
@@ -409,11 +452,9 @@
           String(valor.getMonth() + 1).padStart(2, '0') + '-' +
           String(valor.getDate()).padStart(2, '0');
       }
-      // String pode vir como "2026-05-15T00:00:00Z" ou "2026-05-15"
       return String(valor).substring(0, 10);
     }
 
-    // Normaliza campo horário que pode vir como Date do Sheets ou string
     function normalizarHorario(valor) {
       if (!valor && valor !== 0) return '--:--';
       if (typeof valor === 'string' && valor.indexOf(':') !== -1) return valor.substring(0, 5);
@@ -427,7 +468,6 @@
       return String(valor).substring(0, 5);
     }
 
-    // Busca nome de profissional/serviço no cache local
     function buscaNomeCache(tipo, id) {
       if (!id) return '';
       if (tipo === 'prof' && cache.prof) {
@@ -464,6 +504,18 @@
       skeletons('lista-prof');
       const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
       cache.prof = Array.isArray(lista) ? lista : [];
+
+      // ── NOVO: Carrega contagem de agendamentos de cada profissional
+      const todosAgs = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
+      if (Array.isArray(todosAgs)) {
+        cache.prof.forEach(p => {
+          p._total_ags = todosAgs.filter(a =>
+            a.id_cabeleireiro === p.id &&
+            a.status !== 'expirado' && a.status !== 'cancelado'
+          ).length;
+        });
+      }
+
       renderProf(cache.prof);
     }
 
@@ -472,20 +524,37 @@
       if (!lista.length) {
         container.innerHTML = '<div class="empty"><div class="empty-icon">✂️</div><p>Nenhum profissional cadastrado</p></div>'; return;
       }
-      container.innerHTML = lista.map(p => `
-        <div class="card fade-in">
-          <div class="prof-card">
-            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
-              ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '✂️'}
+      container.innerHTML = lista.map(p => {
+        // ── NOVO: Detalhes extras ──────────────────────────────
+        const emailRow    = p.email    ? `<div class="prof-detail-row">✉️ <span>${p.email}</span></div>` : '';
+        const telefoneRow = p.telefone ? `<div class="prof-detail-row">📱 <span>${p.telefone}</span></div>` : '';
+        const horarioRow  = (p.horario_entrada && p.horario_saida)
+          ? `<div class="prof-detail-row">🕐 <span>${p.horario_entrada} – ${p.horario_saida}</span></div>` : '';
+        const pixRow      = p.chave_pix
+          ? `<div class="prof-detail-row">💳 Pix: <span>${p.chave_pix}</span></div>` : '';
+        const agBadge     = (typeof p._total_ags === 'number')
+          ? `<div class="prof-ag-badge">📅 ${p._total_ags} agendamento${p._total_ags !== 1 ? 's' : ''}</div>` : '';
+        // ───────────────────────────────────────────────────────
+
+        return `
+          <div class="card fade-in">
+            <div class="prof-card">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
+                ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '✂️'}
+              </div>
+              <div class="prof-info">
+                <div class="prof-nome">${p.nome}</div>
+                <div class="prof-esp">${p.especialidades || 'Sem especialidades'}</div>
+                ${agBadge}
+                <div class="prof-details">
+                  ${emailRow}${telefoneRow}${horarioRow}${pixRow}
+                </div>
+              </div>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProf('${p.id}')" style="flex-shrink:0;align-self:flex-start;">✕</button>
             </div>
-            <div class="prof-info">
-              <div class="prof-nome">${p.nome}</div>
-              <div class="prof-esp">${p.especialidades || 'Sem especialidades'}</div>
-            </div>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProf('${p.id}')">✕</button>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     document.getElementById('btn-novo-prof').onclick = () => document.getElementById('modal-prof').classList.add('open');
@@ -493,16 +562,26 @@
       const nome = document.getElementById('fp-nome').value.trim();
       if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
       mostrarLoading(true);
-      const r = await api({ action: 'salvarCabeleireiro', id_estabelecimento: SALON_ID, nome,
-        especialidades: document.getElementById('fp-esp').value.trim(),
-        foto_url: document.getElementById('fp-foto').value.trim() });
+      const r = await api({
+        action: 'salvarCabeleireiro',
+        id_estabelecimento: SALON_ID,
+        nome,
+        especialidades:   document.getElementById('fp-esp').value.trim(),
+        email:            document.getElementById('fp-email').value.trim(),
+        telefone:         document.getElementById('fp-telefone').value.trim(),
+        horario_entrada:  document.getElementById('fp-entrada').value.trim(),
+        horario_saida:    document.getElementById('fp-saida').value.trim(),
+        chave_pix:        document.getElementById('fp-pix').value.trim(),
+        foto_url:         document.getElementById('fp-foto').value.trim()
+      });
       mostrarLoading(false);
       if (r.sucesso) {
         mostrarToast('Profissional cadastrado!', 'sucesso');
         fecharModal('modal-prof');
-        cache.prof = null; // invalida cache
+        cache.prof = null;
         carregarProf(true);
-        ['fp-nome','fp-esp','fp-foto'].forEach(id => document.getElementById(id).value = '');
+        ['fp-nome','fp-esp','fp-email','fp-telefone','fp-entrada','fp-saida','fp-pix','fp-foto']
+          .forEach(id => document.getElementById(id).value = '');
       } else mostrarToast(r.erro || 'Erro', 'erro');
     };
 
