@@ -64,6 +64,27 @@
     .resumo-stat-val { font-family:var(--font-title); font-size:1.4rem; font-weight:700; color:var(--gold); }
     .resumo-stat-lbl { font-size:0.72rem; color:var(--text2); margin-top:2px; }
 
+    /* ── Seletor de dias da semana ──────────────────── */
+    .dias-grid { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .dia-btn {
+      width:40px; height:40px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.08);
+      background:var(--bg3); color:var(--text2);
+      font-size:0.72rem; font-weight:600; cursor:pointer;
+      transition:all var(--transition); font-family:var(--font-body);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .dia-btn.ativo {
+      background:var(--gold-dim); border-color:var(--gold);
+      color:var(--gold);
+    }
+    .horario-por-dia { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .horario-dia-row { display:flex; align-items:center; gap:10px; }
+    .horario-dia-label { font-size:0.8rem; color:var(--text2); width:36px; flex-shrink:0; }
+    .horario-dia-inputs { display:flex; align-items:center; gap:6px; flex:1; }
+    .horario-dia-inputs input { flex:1; padding:8px 10px; font-size:0.82rem; }
+    .horario-dia-sep { font-size:0.75rem; color:var(--text3); }
+
     /* ── Personalização (Config) ───────────────────────── */
     .theme-section-title { font-size:0.78rem; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin:20px 0 10px; }
     .color-swatches { display:flex; gap:10px; flex-wrap:wrap; }
@@ -188,6 +209,39 @@
         <button class="btn btn-outline btn-full" style="margin-top:12px;" onclick="compartilharLink()">Compartilhar Link</button>
       </div>
 
+
+      <!-- Dias da semana e horários -->
+      <div class="card" style="margin-bottom:16px;" id="card-dias-semana">
+        <div class="theme-section-title" style="margin-top:0;">Dias de Funcionamento</div>
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;">Selecione os dias em que o salão atende.</p>
+        <div class="dias-grid" id="dias-grid">
+          <button class="dia-btn" data-dia="0" onclick="toggleDia(this)">Dom</button>
+          <button class="dia-btn ativo" data-dia="1" onclick="toggleDia(this)">Seg</button>
+          <button class="dia-btn ativo" data-dia="2" onclick="toggleDia(this)">Ter</button>
+          <button class="dia-btn ativo" data-dia="3" onclick="toggleDia(this)">Qua</button>
+          <button class="dia-btn ativo" data-dia="4" onclick="toggleDia(this)">Qui</button>
+          <button class="dia-btn ativo" data-dia="5" onclick="toggleDia(this)">Sex</button>
+          <button class="dia-btn" data-dia="6" onclick="toggleDia(this)">Sáb</button>
+        </div>
+
+        <div style="margin-top:16px;">
+          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:8px;">Horário de cada dia (deixe em branco para usar o padrão):</p>
+          <div class="horario-por-dia" id="horario-por-dia">
+            <!-- preenchido por JS -->
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="btn btn-ghost btn-sm" onclick="selecionarTodosDias()">Todos os dias</button>
+          <button class="btn btn-ghost btn-sm" onclick="selecionarDiasUteis()">Seg–Sex</button>
+          <button class="btn btn-ghost btn-sm" onclick="selecionarFimSemana()">Sáb–Dom</button>
+        </div>
+
+        <button class="btn btn-primary btn-full" style="margin-top:14px;" onclick="salvarDiasSemana()">
+          💾 Salvar Dias e Horários
+        </button>
+      </div>
+
       <!-- Modo escuro/claro -->
       <div class="card" style="margin-bottom:16px;">
         <div class="toggle-row" style="border:none;padding:0;">
@@ -244,6 +298,18 @@
           <div class="font-opt" data-font="inter" data-url="">
             <div class="font-opt-name">Inter</div>
             <div class="font-opt-preview" style="font-family:'Inter',sans-serif;">Estilo Minimalista — Neutro</div>
+          </div>
+          <div class="font-opt" data-font="dancing" data-url="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
+            <div class="font-opt-name">Dancing Script ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Dancing Script',cursive;font-size:1.15rem;">Cursiva Elegante — Estilo Salão</div>
+          </div>
+          <div class="font-opt" data-font="greatvibes" data-url="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+            <div class="font-opt-name">Great Vibes ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Great Vibes',cursive;font-size:1.3rem;">Manuscrita Refinada</div>
+          </div>
+          <div class="font-opt" data-font="pacifico" data-url="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
+            <div class="font-opt-name">Pacifico ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Pacifico',cursive;font-size:1rem;">Cursiva Retrô Barbershop</div>
           </div>
         </div>
         <p style="font-size:0.75rem;color:var(--text3);margin-top:12px;">A fonte e cor são aplicadas também na página de agendamento do cliente.</p>
@@ -379,6 +445,9 @@
             montserrat: "'Montserrat', sans-serif",
             oswald:     "'Oswald', sans-serif",
             inter:      "'Inter', sans-serif",
+            dancing:    "'Dancing Script', cursive",
+            greatvibes: "'Great Vibes', cursive",
+            pacifico:   "'Pacifico', cursive",
           };
           if (fontMap[tema.font]) root.style.setProperty('--font-title', fontMap[tema.font]);
         }
@@ -438,6 +507,7 @@
         if (tab.dataset.tab === 'servicos') carregarServ();
         if (tab.dataset.tab === 'produtos') carregarProd();
         if (tab.dataset.tab === 'agenda') carregarAgenda();
+        if (tab.dataset.tab === 'config') carregarConfigDias();
       };
     });
 
@@ -449,6 +519,119 @@
       const cls = tall ? 'sk-card-tall' : 'sk-card';
       document.getElementById(cid).innerHTML =
         `<div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div>`;
+    }
+
+
+    // ════════════════════════════════════════════════════
+    // DIAS DA SEMANA
+    // ════════════════════════════════════════════════════
+    const NOMES_DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+    function toggleDia(btn) {
+      btn.classList.toggle('ativo');
+      atualizarHorariosPorDia();
+    }
+
+    function getDiasSelecionados() {
+      return [...document.querySelectorAll('.dia-btn.ativo')].map(b => parseInt(b.dataset.dia));
+    }
+
+    function selecionarTodosDias() {
+      document.querySelectorAll('.dia-btn').forEach(b => b.classList.add('ativo'));
+      atualizarHorariosPorDia();
+    }
+    function selecionarDiasUteis() {
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', [1,2,3,4,5].includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+    }
+    function selecionarFimSemana() {
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', [0,6].includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+    }
+
+    function atualizarHorariosPorDia() {
+      const container = document.getElementById('horario-por-dia');
+      const dias = getDiasSelecionados();
+      // Preserva valores já digitados
+      const valoresAtuais = {};
+      container.querySelectorAll('.horario-dia-row').forEach(row => {
+        const dia = row.dataset.dia;
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length === 2) valoresAtuais[dia] = { ab: inputs[0].value, fe: inputs[1].value };
+      });
+      if (!dias.length) {
+        container.innerHTML = '<p style="font-size:0.82rem;color:var(--text3);">Nenhum dia selecionado</p>';
+        return;
+      }
+      container.innerHTML = dias.map(d => {
+        const prev = valoresAtuais[d] || {};
+        return `
+          <div class="horario-dia-row" data-dia="${d}">
+            <span class="horario-dia-label">${NOMES_DIAS[d]}</span>
+            <div class="horario-dia-inputs">
+              <input class="input" type="time" value="${prev.ab || ''}" placeholder="Abertura">
+              <span class="horario-dia-sep">–</span>
+              <input class="input" type="time" value="${prev.fe || ''}" placeholder="Fechamento">
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function carregarDiasSemana(diasSalvos, horariosPorDia) {
+      // diasSalvos: array de números [0,1,2,3,4,5] ou string "0,1,2,3,4,5"
+      let dias = [];
+      if (typeof diasSalvos === 'string' && diasSalvos) {
+        dias = diasSalvos.split(',').map(Number).filter(n => !isNaN(n));
+      } else if (Array.isArray(diasSalvos)) {
+        dias = diasSalvos;
+      } else {
+        dias = [1,2,3,4,5]; // padrão: seg-sex
+      }
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', dias.includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+      // Preenche horários salvos
+      if (horariosPorDia) {
+        let hp = horariosPorDia;
+        if (typeof hp === 'string') { try { hp = JSON.parse(hp); } catch(_) { hp = {}; } }
+        Object.entries(hp).forEach(([dia, hor]) => {
+          const row = document.querySelector(`.horario-dia-row[data-dia="${dia}"]`);
+          if (row) {
+            const inputs = row.querySelectorAll('input');
+            if (inputs[0] && hor.ab) inputs[0].value = hor.ab;
+            if (inputs[1] && hor.fe) inputs[1].value = hor.fe;
+          }
+        });
+      }
+    }
+
+    async function salvarDiasSemana() {
+      const dias = getDiasSelecionados();
+      if (!dias.length) { mostrarToast('Selecione ao menos um dia', 'erro'); return; }
+      // Coleta horários por dia
+      const horariosPorDia = {};
+      document.querySelectorAll('.horario-dia-row').forEach(row => {
+        const dia    = row.dataset.dia;
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length === 2) {
+          horariosPorDia[dia] = { ab: inputs[0].value || '', fe: inputs[1].value || '' };
+        }
+      });
+      mostrarLoading(true);
+      const r = await api({
+        action: 'atualizarEstabelecimento',
+        id:     SALON_ID,
+        dias_semana:      dias.join(','),
+        horarios_por_dia: JSON.stringify(horariosPorDia),
+      });
+      mostrarLoading(false);
+      if (r.sucesso) mostrarToast('Dias e horários salvos!', 'sucesso');
+      else mostrarToast(r.erro || 'Erro ao salvar', 'erro');
     }
 
     // ════════════════════════════════════════════════════
@@ -466,12 +649,31 @@
       if (el) el.textContent = linkUrl;
       document.getElementById('data-agenda').value = dataHoje();
       carregarAgenda();
+      // Carrega dias caso a aba config já esteja visível
+      if (document.getElementById('tab-config').style.display !== 'none') carregarConfigDias();
       // Pré-carrega prof e serv para o cache (usado no mapa de nomes na agenda)
       carregarProfBackground();
       carregarServBackground();
     }
 
-    async function carregarProfBackground() {
+    async function carregarConfigDias() {
+      mostrarLoading(true);
+      const info = await api({ action: 'getEstabelecimento', id: SALON_ID });
+      mostrarLoading(false);
+      if (!info.erro) {
+        carregarDiasSemana(info.dias_semana, info.horarios_por_dia);
+        // Atualiza também horário padrão se existir
+        if (info.horario_abertura || info.horario_fechamento) {
+          document.querySelectorAll('.horario-dia-row').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            if (inputs[0] && !inputs[0].value) inputs[0].value = info.horario_abertura || '';
+            if (inputs[1] && !inputs[1].value) inputs[1].value = info.horario_fechamento || '';
+          });
+        }
+      }
+    }
+
+        async function carregarProfBackground() {
       const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
       cache.prof = Array.isArray(lista) ? lista : [];
     }
