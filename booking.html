@@ -342,17 +342,17 @@
     let otpResendTimer = null;  // interval do countdown
     let clienteLogado  = null;  // { nome, email }
 
-    // ── Sessão (sessionStorage) ───────────────────────────
+    // ── Sessão (localStorage — persiste entre recarregamentos) ──
     function carregarSessao() {
       try {
-        const s = sessionStorage.getItem('cj_cliente');
+        const s = localStorage.getItem('cj_cliente');
         if (s) { clienteLogado = JSON.parse(s); return true; }
       } catch(_) {}
       return false;
     }
     function salvarSessao(dados) {
       clienteLogado = dados;
-      try { sessionStorage.setItem('cj_cliente', JSON.stringify(dados)); } catch(_) {}
+      try { localStorage.setItem('cj_cliente', JSON.stringify(dados)); } catch(_) {}
     }
 
     // ── Gera código aleatório de 6 dígitos ─────────────────
@@ -498,7 +498,7 @@
 
     function voltarParaLogin() {
       clienteLogado = null;
-      try { sessionStorage.removeItem('cj_cliente'); } catch(_) {}
+      try { localStorage.removeItem('cj_cliente'); } catch(_) {}
       document.getElementById('login-screen').style.display    = '';
       document.getElementById('booking-content').style.display = 'none';
       document.getElementById('hdr-right').innerHTML = '';
