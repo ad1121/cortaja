@@ -295,8 +295,8 @@
           root.style.setProperty('--gold-dim', tema.color + '26');
         }
         if (tema.font) {
-          const fontMap = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif" };
-          const urlMap  = { cormorant:"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap", montserrat:"https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap", oswald:"https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap" };
+          const fontMap = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif", dancing:"'Dancing Script',cursive", greatvibes:"'Great Vibes',cursive", pacifico:"'Pacifico',cursive" };
+          const urlMap  = { cormorant:"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap", montserrat:"https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap", oswald:"https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap", dancing:"https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap", greatvibes:"https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap", pacifico:"https://fonts.googleapis.com/css2?family=Pacifico&display=swap" };
           if (fontMap[tema.font]) root.style.setProperty('--font-title', fontMap[tema.font]);
           if (urlMap[tema.font])  document.getElementById('font-link').href = urlMap[tema.font];
         }
