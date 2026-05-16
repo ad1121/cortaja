@@ -570,6 +570,7 @@
       const res = await api({
         action: 'getHorariosDisponiveis',
         id_estabelecimento: SALON_ID,
+        id_cabeleireiro: selectedProf ? selectedProf.id : '',
         data,
         duracao_minutos: selectedServ ? selectedServ.duracao_minutos : 30
       });
