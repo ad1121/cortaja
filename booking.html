@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -7,9 +7,18 @@
   <title>CortaJá — Agendar</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <!-- EmailJS SDK -->
+  <link id="font-link" rel="stylesheet" href="">
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
+    /* ── Modo Claro ─────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg:#F5F3EF; --bg2:#EDEAE4; --bg3:#E4E0D8; --bg4:#D8D3C8;
+      --text:#1A1814; --text2:#6B6560; --text3:#9A9590;
+    }
+    [data-theme="light"] .header { background:rgba(245,243,239,0.92); }
+    [data-theme="light"] .card   { background:#fff; border-color:rgba(0,0,0,0.07); }
+
+    /* ── Geral ──────────────────────────────────────────── */
     .salao-hero { padding:24px 20px 0; text-align:center; }
     .salao-logo { width:80px;height:80px;border-radius:28px;background:var(--bg4);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;border:2px solid rgba(201,168,76,0.2); }
     .salao-nome { font-family:var(--font-title);font-size:1.4rem;font-weight:800; }
@@ -17,89 +26,58 @@
     .legenda { display:flex;gap:12px;flex-wrap:wrap;padding:0 20px 4px; }
     .leg-item { display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text2); }
     .leg-dot { width:12px;height:12px;border-radius:50%; }
-    .step { display:none; }
-    .step.active { display:block; }
+    .step { display:none; } .step.active { display:block; }
     .step-indicator { display:flex;align-items:center;gap:6px;padding:16px 20px 0; }
     .step-dot { width:8px;height:8px;border-radius:50%;background:var(--bg4);transition:all var(--transition); }
     .step-dot.active { background:var(--gold);width:24px;border-radius:99px; }
     .step-dot.done { background:var(--green); }
+
+    /* ── Chips ──────────────────────────────────────────── */
     .prof-chip { display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;border-radius:var(--radius-lg);background:var(--bg2);border:2px solid transparent;cursor:pointer;transition:all var(--transition);flex:1;min-width:calc(50% - 6px); }
     .prof-chip.selected { border-color:var(--gold);background:var(--gold-dim); }
-    .prof-chip-nome { font-size:0.82rem;font-weight:600;text-align:center; }
     .prof-chips { display:flex;flex-wrap:wrap;gap:12px; }
     .serv-chip { display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:var(--radius-lg);background:var(--bg2);border:2px solid transparent;cursor:pointer;transition:all var(--transition); }
     .serv-chip.selected { border-color:var(--gold);background:var(--gold-dim); }
+
+    /* ── Resumo ─────────────────────────────────────────── */
     .resumo-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
     .resumo-label { font-size:0.82rem;color:var(--text2); }
     .resumo-valor { font-size:0.9rem;font-weight:600; }
 
-    /* ── Tela de Login ──────────────────────────────────── */
-    #login-screen {
-      min-height: calc(100dvh - 80px);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 32px 24px; text-align: center;
-    }
-    .login-logo {
-      width:72px; height:72px; border-radius:var(--radius-lg);
-      background:var(--bg3); border:1px solid rgba(201,168,76,0.25);
-      display:flex; align-items:center; justify-content:center;
-      font-size:2rem; margin:0 auto 20px;
-    }
-    .login-title { font-family:var(--font-title); font-size:1.5rem; font-weight:800; margin-bottom:8px; }
-    .login-sub { font-size:0.85rem; color:var(--text2); margin-bottom:32px; line-height:1.6; max-width:300px; }
-    .login-form { width:100%; max-width:360px; display:flex; flex-direction:column; gap:14px; }
-
-    /* Painel OTP oculto por padrão */
-    #otp-panel { display:none; flex-direction:column; gap:14px; }
+    /* ── Login ──────────────────────────────────────────── */
+    #login-screen { min-height:calc(100dvh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center; }
+    .login-logo { width:72px;height:72px;border-radius:var(--radius-lg);background:var(--bg3);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px; }
+    .login-title { font-family:var(--font-title);font-size:1.5rem;font-weight:800;margin-bottom:8px; }
+    .login-sub { font-size:0.85rem;color:var(--text2);margin-bottom:32px;line-height:1.6;max-width:300px; }
+    .login-form { width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px; }
+    #otp-panel { display:none;flex-direction:column;gap:14px; }
     #otp-panel.open { display:flex; }
-
-    /* Input de código grande e centralizado */
-    .otp-input {
-      text-align:center; font-family:var(--font-title);
-      font-size:2rem; font-weight:700; letter-spacing:0.5rem;
-      padding:16px; background:var(--bg3);
-      border:2px solid rgba(201,168,76,0.3);
-      border-radius:var(--radius-md); color:var(--text1); width:100%;
-    }
-    .otp-input:focus { outline:none; border-color:var(--gold); }
-    .otp-input::-webkit-outer-spin-button,
-    .otp-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+    .otp-input { text-align:center;font-family:var(--font-title);font-size:2rem;font-weight:700;letter-spacing:0.5rem;padding:16px;background:var(--bg3);border:2px solid rgba(201,168,76,0.3);border-radius:var(--radius-md);color:var(--text1);width:100%; }
+    .otp-input:focus { outline:none;border-color:var(--gold); }
+    .otp-input::-webkit-outer-spin-button,.otp-input::-webkit-inner-spin-button { -webkit-appearance:none;margin:0; }
     .otp-input[type=number] { -moz-appearance:textfield; }
+    .otp-resend { font-size:0.8rem;color:var(--text2);text-align:center; }
+    .otp-resend button { background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;padding:0;font-family:var(--font-body);text-decoration:underline; }
+    .otp-resend button:disabled { color:var(--text3);cursor:default;text-decoration:none; }
+    .user-chip { display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:99px;padding:4px 12px 4px 4px;font-size:0.8rem;color:var(--text2); }
+    .user-avatar { width:26px;height:26px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--gold);font-weight:700; }
 
-    /* Countdown de reenvio */
-    .otp-resend { font-size:0.8rem; color:var(--text2); text-align:center; }
-    .otp-resend button {
-      background:none; border:none; color:var(--gold);
-      cursor:pointer; font-size:0.8rem; padding:0;
-      font-family:var(--font-body); text-decoration:underline;
-    }
-    .otp-resend button:disabled { color:var(--text3); cursor:default; text-decoration:none; }
-
-    /* Chip do usuário no header */
-    .user-chip {
-      display:flex; align-items:center; gap:8px;
-      background:var(--bg3); border-radius:99px;
-      padding:4px 12px 4px 4px; font-size:0.8rem; color:var(--text2);
-    }
-    .user-avatar {
-      width:26px; height:26px; border-radius:50%;
-      background:var(--gold-dim); display:flex;
-      align-items:center; justify-content:center;
-      font-size:0.72rem; color:var(--gold); font-weight:700;
-    }
+    /* ── Histórico ──────────────────────────────────────── */
+    .hist-nav { display:flex;gap:8px;margin-bottom:16px; }
+    .hist-tab { flex:1;padding:10px;border-radius:var(--radius-md);background:var(--bg2);border:1.5px solid transparent;font-size:0.82rem;font-weight:500;cursor:pointer;text-align:center;color:var(--text2);transition:all var(--transition);font-family:var(--font-body); }
+    .hist-tab.active { border-color:var(--gold);color:var(--gold);background:var(--gold-dim); }
+    .hist-card { border-left:3px solid var(--gold);padding-left:12px; }
+    .hist-hora { font-family:var(--font-title);font-weight:700;font-size:1rem; }
+    .hist-info { font-size:0.8rem;color:var(--text2);margin-top:4px; }
+    .hist-status { font-size:0.75rem;margin-top:6px; }
   </style>
 </head>
 <body>
   <div id="loading-overlay"><div class="spinner"></div></div>
 
-  <!-- PWA Banner -->
   <div id="pwa-banner">
     <div class="pwa-icon">✂️</div>
-    <div class="pwa-text">
-      <h4>Instalar CortaJá</h4>
-      <p>Agende mais rápido na próxima vez</p>
-    </div>
+    <div class="pwa-text"><h4>Instalar CortaJá</h4><p>Agende mais rápido na próxima vez</p></div>
     <div class="pwa-actions">
       <button class="btn btn-primary btn-sm" id="pwa-install-btn">Instalar</button>
       <button class="btn btn-ghost btn-sm" id="pwa-dismiss-btn">Depois</button>
@@ -109,22 +87,19 @@
   <div class="page">
     <header class="header">
       <div class="header-inner">
-        <div class="logo">Corta<span>Já</span></div>
+        <div class="logo" id="hdr-logo">Corta<span>Já</span></div>
         <div id="hdr-right"></div>
       </div>
     </header>
 
     <!-- ══════════════════════════════════════════════════ -->
-    <!-- TELA DE LOGIN — verificação por e-mail            -->
+    <!-- TELA DE LOGIN                                      -->
     <!-- ══════════════════════════════════════════════════ -->
     <div id="login-screen">
       <div class="login-logo">✂️</div>
       <div class="login-title">Bem-vindo!</div>
-      <p class="login-sub">Informe seu e-mail para receber um código de acesso e agendar seu horário.</p>
-
+      <p class="login-sub">Informe seu e-mail para receber um código de acesso.</p>
       <div class="login-form">
-
-        <!-- Etapa 1: Nome + E-mail -->
         <div id="email-panel">
           <div class="input-group" style="margin:0;">
             <label class="input-label">Nome Completo *</label>
@@ -134,50 +109,27 @@
             <label class="input-label">E-mail *</label>
             <input class="input" id="login-email" placeholder="seu@email.com" type="email" autocomplete="email">
           </div>
-          <button class="btn btn-primary btn-full" id="btn-enviar-codigo">
-            Enviar código →
-          </button>
+          <button class="btn btn-primary btn-full" id="btn-enviar-codigo">Enviar código →</button>
         </div>
-
-        <!-- Etapa 2: Código OTP -->
         <div id="otp-panel">
           <div style="text-align:center;">
             <div style="font-size:1.8rem;margin-bottom:8px;">📬</div>
-            <p style="font-size:0.85rem;color:var(--text2);line-height:1.6;">
-              Código enviado para<br>
-              <strong id="otp-email-display" style="color:var(--text1);"></strong>
-            </p>
+            <p style="font-size:0.85rem;color:var(--text2);line-height:1.6;">Código enviado para<br><strong id="otp-email-display" style="color:var(--text1);"></strong></p>
           </div>
-          <input
-            class="otp-input"
-            id="otp-input"
-            type="number"
-            placeholder="000000"
-            autocomplete="one-time-code"
-            inputmode="numeric"
-          >
-          <button class="btn btn-primary btn-full" id="btn-verificar-codigo">
-            Verificar e entrar ✓
-          </button>
+          <input class="otp-input" id="otp-input" type="number" placeholder="000000" autocomplete="one-time-code" inputmode="numeric">
+          <button class="btn btn-primary btn-full" id="btn-verificar-codigo">Verificar e entrar ✓</button>
           <div class="otp-resend">
-            <span id="otp-resend-text">Reenviar código em <strong id="otp-countdown">60</strong>s</span>
-            <span id="otp-resend-btn-wrap" style="display:none;">
-              Não recebeu? <button id="btn-reenviar">Reenviar código</button>
-            </span>
+            <span id="otp-resend-text">Reenviar em <strong id="otp-countdown">60</strong>s</span>
+            <span id="otp-resend-btn-wrap" style="display:none;">Não recebeu? <button id="btn-reenviar">Reenviar código</button></span>
           </div>
-          <button class="btn btn-ghost btn-full" id="btn-trocar-email" style="font-size:0.82rem;">
-            ← Trocar e-mail
-          </button>
+          <button class="btn btn-ghost btn-full" id="btn-trocar-email" style="font-size:0.82rem;">← Trocar e-mail</button>
         </div>
-
-        <p style="font-size:0.73rem;color:var(--text3);margin-top:4px;line-height:1.5;">
-          Ao entrar, você concorda com os Termos de Uso e Política de Privacidade do CortaJá.
-        </p>
+        <p style="font-size:0.73rem;color:var(--text3);margin-top:4px;line-height:1.5;">Ao entrar, você concorda com os Termos de Uso e Política de Privacidade do CortaJá.</p>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════ -->
-    <!-- FLUXO DE AGENDAMENTO (oculto até login)           -->
+    <!-- CONTEÚDO (oculto até login)                        -->
     <!-- ══════════════════════════════════════════════════ -->
     <div id="booking-content" style="display:none;">
 
@@ -187,111 +139,109 @@
         <div class="salao-horario" id="salao-horario"></div>
       </div>
 
-      <div class="step-indicator">
-        <div class="step-dot active" id="sd-1"></div>
-        <div class="step-dot" id="sd-2"></div>
-        <div class="step-dot" id="sd-3"></div>
-        <div class="step-dot" id="sd-4"></div>
+      <!-- Nav: Agendar / Meus Agendamentos -->
+      <div style="display:flex;gap:10px;padding:16px 20px 0;">
+        <button class="hist-tab active" id="nav-agendar" onclick="mostrarAba('agendar')">✂️ Agendar</button>
+        <button class="hist-tab" id="nav-historico" onclick="mostrarAba('historico')">📋 Meus Agendamentos</button>
       </div>
 
-      <!-- STEP 1 -->
-      <div class="step active section" id="step-1">
-        <div class="section-title">Escolha o Profissional</div>
-        <div class="prof-chips" id="prof-chips">
-          <div class="empty"><div class="empty-icon">✂️</div><p>Carregando...</p></div>
+      <!-- ── ABA: AGENDAR ─────────────────────────────── -->
+      <div id="aba-agendar">
+        <div class="step-indicator">
+          <div class="step-dot active" id="sd-1"></div>
+          <div class="step-dot" id="sd-2"></div>
+          <div class="step-dot" id="sd-3"></div>
+          <div class="step-dot" id="sd-4"></div>
         </div>
-        <div style="margin-top:24px;">
-          <div class="section-title">Escolha o Serviço</div>
-          <div class="stack" id="serv-list">
-            <div class="empty"><div class="empty-icon">💈</div><p>Carregando...</p></div>
+
+        <!-- STEP 1 -->
+        <div class="step active section" id="step-1">
+          <div class="section-title">Escolha o Profissional</div>
+          <div class="prof-chips" id="prof-chips">
+            <div class="empty"><div class="empty-icon">✂️</div><p>Carregando...</p></div>
           </div>
-        </div>
-        <button class="btn btn-primary btn-full" style="margin-top:24px;" id="btn-step1">Próximo →</button>
-      </div>
-
-      <!-- STEP 2 -->
-      <div class="step section" id="step-2">
-        <div class="section-title">Escolha a Data</div>
-        <input type="date" class="input" id="data-escolhida" style="margin-bottom:20px;">
-        <div class="section-title">Horários Disponíveis</div>
-        <div class="legenda">
-          <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Disponível</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--text3)"></div>Ocupado</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Confirmado</div>
-        </div>
-        <div style="margin-top:16px;">
-          <div class="slot-grid" id="slot-grid">
-            <p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Selecione uma data</p>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:24px;">
-          <button class="btn btn-ghost btn-full" id="btn-back-1">← Voltar</button>
-          <button class="btn btn-primary btn-full" id="btn-step2">Próximo →</button>
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="step section" id="step-3">
-        <div class="section-title">Confirmar Agendamento</div>
-
-        <!-- Card do cliente logado -->
-        <div class="card" style="margin-bottom:16px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.15);">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div id="confirm-avatar" style="width:44px;height:44px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--gold);flex-shrink:0;"></div>
-            <div style="flex:1;">
-              <div id="confirm-nome" style="font-weight:600;font-size:0.95rem;"></div>
-              <div id="confirm-email-txt" style="font-size:0.8rem;color:var(--text2);margin-top:2px;"></div>
+          <div style="margin-top:24px;">
+            <div class="section-title">Escolha o Serviço</div>
+            <div class="stack" id="serv-list">
+              <div class="empty"><div class="empty-icon">💈</div><p>Carregando...</p></div>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="voltarParaLogin()" style="font-size:0.75rem;flex-shrink:0;">Trocar</button>
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:24px;" id="btn-step1">Próximo →</button>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step section" id="step-2">
+          <div class="section-title">Escolha a Data</div>
+          <input type="date" class="input" id="data-escolhida" style="margin-bottom:20px;">
+          <div class="section-title">Horários Disponíveis</div>
+          <div class="legenda">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Disponível</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--text3)"></div>Ocupado</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Confirmado</div>
+          </div>
+          <div id="slot-dur-info" style="font-size:0.8rem;color:var(--text2);padding:8px 0 0;"></div>
+          <div style="margin-top:8px;"><div class="slot-grid" id="slot-grid"><p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Selecione uma data</p></div></div>
+          <div style="display:flex;gap:10px;margin-top:24px;">
+            <button class="btn btn-ghost btn-full" id="btn-back-1">← Voltar</button>
+            <button class="btn btn-primary btn-full" id="btn-step2">Próximo →</button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="section-title" style="margin-bottom:12px;">Resumo</div>
-          <div class="resumo-row">
-            <span class="resumo-label">Profissional</span>
-            <span class="resumo-valor" id="r-prof">–</span>
+        <!-- STEP 3 -->
+        <div class="step section" id="step-3">
+          <div class="section-title">Confirmar Agendamento</div>
+          <div class="card" style="margin-bottom:16px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.15);">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="confirm-avatar" style="width:44px;height:44px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--gold);flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div id="confirm-nome" style="font-weight:600;font-size:0.95rem;"></div>
+                <div id="confirm-email-txt" style="font-size:0.8rem;color:var(--text2);margin-top:2px;"></div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="voltarParaLogin()" style="font-size:0.75rem;flex-shrink:0;">Trocar</button>
+            </div>
           </div>
-          <div class="resumo-row">
-            <span class="resumo-label">Serviço</span>
-            <span class="resumo-valor" id="r-serv">–</span>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:12px;">Resumo</div>
+            <div class="resumo-row"><span class="resumo-label">Profissional</span><span class="resumo-valor" id="r-prof">–</span></div>
+            <div class="resumo-row"><span class="resumo-label">Serviço</span><span class="resumo-valor" id="r-serv">–</span></div>
+            <div class="resumo-row"><span class="resumo-label">Data e Horário</span><span class="resumo-valor" id="r-data">–</span></div>
+            <div class="resumo-row" style="border:none;"><span class="resumo-label">Taxa de confirmação</span><span class="resumo-valor" style="color:var(--gold);">R$ 0,99</span></div>
           </div>
-          <div class="resumo-row">
-            <span class="resumo-label">Data e Horário</span>
-            <span class="resumo-valor" id="r-data">–</span>
-          </div>
-          <div class="resumo-row" style="border:none;">
-            <span class="resumo-label">Taxa de confirmação</span>
-            <span class="resumo-valor" style="color:var(--gold);">R$ 0,99</span>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-ghost btn-full" id="btn-back-2">← Voltar</button>
+            <button class="btn btn-primary btn-full" id="btn-step3">Confirmar →</button>
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:20px;">
-          <button class="btn btn-ghost btn-full" id="btn-back-2">← Voltar</button>
-          <button class="btn btn-primary btn-full" id="btn-step3">Confirmar →</button>
+        <!-- STEP 4 -->
+        <div class="step section" id="step-4">
+          <div class="section-title">Confirmar com Pix</div>
+          <div class="pix-card">
+            <p style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;">Chave Pix</p>
+            <div class="pix-key" id="pix-key">61991944143</div>
+            <p style="font-size:0.82rem;color:var(--text2);margin:8px 0 4px;">Valor</p>
+            <div class="pix-valor">R$ 0,99</div>
+            <button class="btn btn-outline btn-sm" style="margin-top:16px;" id="btn-copiar-pix">📋 Copiar Chave</button>
+          </div>
+          <div class="card" style="margin-top:16px;">
+            <p style="font-size:0.85rem;color:var(--text2);margin-bottom:8px;">⏱ Seu horário está reservado por <strong id="timer-text" style="color:var(--gold);">10:00</strong></p>
+            <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+          </div>
+          <div class="card" style="margin-top:12px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.2);">
+            <p style="font-size:0.82rem;color:var(--text2);">Após realizar o pagamento, o responsável do salão irá confirmar seu agendamento. Você pode fechar esta tela.</p>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-ghost btn-full" id="btn-back-3">← Cancelar</button>
+            <button class="btn btn-primary btn-full" id="btn-verificar">Já paguei ✓</button>
+          </div>
         </div>
       </div>
 
-      <!-- STEP 4 -->
-      <div class="step section" id="step-4">
-        <div class="section-title">Confirmar com Pix</div>
-        <div class="pix-card">
-          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;">Chave Pix</p>
-          <div class="pix-key" id="pix-key">61991944143</div>
-          <p style="font-size:0.82rem;color:var(--text2);margin:8px 0 4px;">Valor</p>
-          <div class="pix-valor">R$ 0,99</div>
-          <button class="btn btn-outline btn-sm" style="margin-top:16px;" id="btn-copiar-pix">📋 Copiar Chave</button>
-        </div>
-        <div class="card" style="margin-top:16px;">
-          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:8px;">⏱ Seu horário está reservado por <strong id="timer-text" style="color:var(--gold);">10:00</strong></p>
-          <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
-        </div>
-        <div class="card" style="margin-top:12px;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.2);">
-          <p style="font-size:0.82rem;color:var(--text2);">Após realizar o pagamento, o responsável do salão irá confirmar seu agendamento. Você pode fechar esta tela.</p>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:20px;">
-          <button class="btn btn-ghost btn-full" id="btn-back-3">← Cancelar</button>
-          <button class="btn btn-primary btn-full" id="btn-verificar">Já paguei ✓</button>
+      <!-- ── ABA: HISTÓRICO ───────────────────────────── -->
+      <div id="aba-historico" style="display:none;" class="section">
+        <div class="section-title">Meus Agendamentos</div>
+        <div class="stack" id="lista-historico">
+          <div style="text-align:center;padding:40px 0;color:var(--text2);font-size:0.85rem;">Carregando...</div>
         </div>
       </div>
 
@@ -302,7 +252,7 @@
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
 
-    // ── Credenciais EmailJS ────────────────────────────────
+    // ── EmailJS ────────────────────────────────────────────
     const EJS_SERVICE_ID  = 'service_abc123';
     const EJS_TEMPLATE_ID = 'template_d6ig8vg';
     const EJS_PUBLIC_KEY  = 'h8K5opt5harlCYRwM';
@@ -310,82 +260,82 @@
 
     // ── PWA ────────────────────────────────────────────────
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault(); deferredPrompt = e;
-      document.getElementById('pwa-banner').classList.add('show');
-    });
-    document.getElementById('pwa-install-btn').onclick = async () => {
-      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-      document.getElementById('pwa-banner').classList.remove('show');
-    };
-    document.getElementById('pwa-dismiss-btn').onclick = () =>
-      document.getElementById('pwa-banner').classList.remove('show');
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-banner').classList.add('show'); });
+    document.getElementById('pwa-install-btn').onclick = async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } document.getElementById('pwa-banner').classList.remove('show'); };
+    document.getElementById('pwa-dismiss-btn').onclick = () => document.getElementById('pwa-banner').classList.remove('show');
 
     const params   = new URLSearchParams(location.search);
     const SALON_ID = params.get('id');
-
     if (!SALON_ID) {
       document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p>Solicite um novo link ao salão.</p></div>';
     }
 
     let salonInfo    = null;
     let selectedProf = null;
-    let selectedServ = null;
+    let selectedServ = null;  // { id, nome_servico, preco, duracao_minutos }
     let selectedSlot = null;
     let agendamentoId = null;
     let timerInterval = null;
     let timerSeconds  = CONFIG.TEMPO_RESERVA * 60;
+    let otpGerado = null, otpExpira = null, otpResendTimer = null;
+    let clienteLogado = null;
 
-    // ── Estado OTP ─────────────────────────────────────────
-    let otpGerado      = null;  // código de 6 dígitos gerado
-    let otpExpira      = null;  // timestamp ms de expiração (10 min)
-    let otpResendTimer = null;  // interval do countdown
-    let clienteLogado  = null;  // { nome, email }
-
-    // ── Sessão (localStorage — persiste entre recarregamentos) ──
-    function carregarSessao() {
+    // ════════════════════════════════════════════════════
+    // TEMA — sincronizado com o dashboard
+    // ════════════════════════════════════════════════════
+    function aplicarTemaBooking() {
       try {
-        const s = localStorage.getItem('cj_cliente');
-        if (s) { clienteLogado = JSON.parse(s); return true; }
+        const raw = localStorage.getItem('cj_theme_booking_' + SALON_ID);
+        if (!raw) return;
+        const tema = JSON.parse(raw);
+        const root = document.documentElement;
+        if (tema.mode) root.setAttribute('data-theme', tema.mode === 'light' ? 'light' : 'dark');
+        if (tema.color) {
+          root.style.setProperty('--gold', tema.color);
+          root.style.setProperty('--gold-dim', tema.color + '26');
+        }
+        if (tema.font) {
+          const fontMap = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif" };
+          const urlMap  = { cormorant:"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap", montserrat:"https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap", oswald:"https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap" };
+          if (fontMap[tema.font]) root.style.setProperty('--font-title', fontMap[tema.font]);
+          if (urlMap[tema.font])  document.getElementById('font-link').href = urlMap[tema.font];
+        }
       } catch(_) {}
+    }
+    aplicarTemaBooking();
+    // Re-aplica ao voltar para a aba (dashboard pode ter mudado)
+    window.addEventListener('focus', aplicarTemaBooking);
+
+    // ════════════════════════════════════════════════════
+    // SESSÃO
+    // ════════════════════════════════════════════════════
+    function carregarSessao() {
+      try { const s = localStorage.getItem('cj_cliente'); if (s) { clienteLogado = JSON.parse(s); return true; } } catch(_) {}
       return false;
     }
-    function salvarSessao(dados) {
-      clienteLogado = dados;
-      try { localStorage.setItem('cj_cliente', JSON.stringify(dados)); } catch(_) {}
+    function salvarSessao(d) {
+      clienteLogado = d;
+      try { localStorage.setItem('cj_cliente', JSON.stringify(d)); } catch(_) {}
     }
 
-    // ── Gera código aleatório de 6 dígitos ─────────────────
-    function gerarCodigo() {
-      return String(Math.floor(100000 + Math.random() * 900000));
-    }
-
-    // ── Envia e-mail com código via EmailJS ────────────────
+    // ════════════════════════════════════════════════════
+    // OTP
+    // ════════════════════════════════════════════════════
+    function gerarCodigo() { return String(Math.floor(100000 + Math.random() * 900000)); }
     async function enviarCodigo(nome, email) {
-      otpGerado = gerarCodigo();
-      otpExpira = Date.now() + 10 * 60 * 1000; // expira em 10 min
-      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
-        nome,
-        email_cliente: email,
-        codigo: otpGerado,
-      });
+      otpGerado = gerarCodigo(); otpExpira = Date.now() + 10 * 60 * 1000;
+      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, { nome, email_cliente: email, codigo: otpGerado });
     }
 
-    // ── ENVIAR CÓDIGO ──────────────────────────────────────
     document.getElementById('btn-enviar-codigo').onclick = async () => {
       const nome  = document.getElementById('login-nome').value.trim();
       const email = document.getElementById('login-email').value.trim();
-
-      if (!nome)                    { mostrarToast('Informe seu nome', 'erro'); return; }
+      if (!nome)  { mostrarToast('Informe seu nome', 'erro'); return; }
       if (!email || !email.includes('@')) { mostrarToast('Informe um e-mail válido', 'erro'); return; }
-
       const btn = document.getElementById('btn-enviar-codigo');
-      btn.disabled    = true;
-      btn.textContent = 'Enviando...';
-
+      btn.disabled = true; btn.textContent = 'Enviando...';
       try {
         await enviarCodigo(nome, email);
-        // Transição para painel OTP
         document.getElementById('email-panel').style.display = 'none';
         document.getElementById('otp-panel').classList.add('open');
         document.getElementById('otp-email-display').textContent = email;
@@ -394,31 +344,19 @@
         iniciarCountdown();
         mostrarToast('Código enviado! Verifique seu e-mail.', 'sucesso');
       } catch(err) {
-        console.error('EmailJS:', err);
-        mostrarToast('Erro ao enviar e-mail. Tente novamente.', 'erro');
-        btn.disabled    = false;
-        btn.textContent = 'Enviar código →';
+        mostrarToast('Erro ao enviar e-mail.', 'erro');
+        btn.disabled = false; btn.textContent = 'Enviar código →';
       }
     };
 
-    // ── VERIFICAR CÓDIGO ───────────────────────────────────
     document.getElementById('btn-verificar-codigo').onclick = () => {
       const digitado = document.getElementById('otp-input').value.trim();
-
-      if (!digitado || digitado.length < 6) {
-        mostrarToast('Digite o código de 6 dígitos', 'erro'); return;
-      }
-      if (Date.now() > otpExpira) {
-        mostrarToast('Código expirado. Solicite um novo.', 'erro');
-        resetarParaEmail(); return;
-      }
+      if (!digitado || digitado.length < 6) { mostrarToast('Digite o código de 6 dígitos', 'erro'); return; }
+      if (Date.now() > otpExpira) { mostrarToast('Código expirado. Solicite um novo.', 'erro'); resetarParaEmail(); return; }
       if (digitado !== otpGerado) {
-        mostrarToast('Código incorreto. Tente novamente.', 'erro');
-        document.getElementById('otp-input').value = '';
-        document.getElementById('otp-input').focus(); return;
+        mostrarToast('Código incorreto.', 'erro');
+        document.getElementById('otp-input').value = ''; document.getElementById('otp-input').focus(); return;
       }
-
-      // ✅ Sucesso
       const nome  = document.getElementById('login-nome').value.trim();
       const email = document.getElementById('login-email').value.trim();
       salvarSessao({ nome, email });
@@ -426,92 +364,119 @@
       entrarNoApp();
     };
 
-    // Enter no campo OTP confirma direto
-    document.getElementById('otp-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('btn-verificar-codigo').click();
-    });
+    document.getElementById('otp-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-verificar-codigo').click(); });
 
-    // ── REENVIAR CÓDIGO ────────────────────────────────────
     document.getElementById('btn-reenviar').onclick = async () => {
       const nome  = document.getElementById('login-nome').value.trim();
       const email = document.getElementById('login-email').value.trim();
       document.getElementById('btn-reenviar').disabled = true;
-      try {
-        await enviarCodigo(nome, email);
-        mostrarToast('Novo código enviado!', 'sucesso');
-        document.getElementById('otp-input').value = '';
-        document.getElementById('otp-input').focus();
-        iniciarCountdown();
-      } catch(_) {
-        mostrarToast('Erro ao reenviar. Tente novamente.', 'erro');
-        document.getElementById('btn-reenviar').disabled = false;
-      }
+      try { await enviarCodigo(nome, email); mostrarToast('Novo código enviado!', 'sucesso'); document.getElementById('otp-input').value = ''; document.getElementById('otp-input').focus(); iniciarCountdown(); }
+      catch(_) { mostrarToast('Erro ao reenviar.', 'erro'); document.getElementById('btn-reenviar').disabled = false; }
     };
 
-    // ── TROCAR E-MAIL ──────────────────────────────────────
     document.getElementById('btn-trocar-email').onclick = resetarParaEmail;
-
     function resetarParaEmail() {
-      clearInterval(otpResendTimer);
-      otpGerado = null; otpExpira = null;
+      clearInterval(otpResendTimer); otpGerado = null; otpExpira = null;
       document.getElementById('otp-panel').classList.remove('open');
       document.getElementById('email-panel').style.display = '';
       const btn = document.getElementById('btn-enviar-codigo');
       btn.disabled = false; btn.textContent = 'Enviar código →';
     }
 
-    // ── Countdown de reenvio (60s) ─────────────────────────
     function iniciarCountdown() {
       clearInterval(otpResendTimer);
       let s = 60;
-      document.getElementById('otp-countdown').textContent    = s;
-      document.getElementById('otp-resend-text').style.display     = '';
-      document.getElementById('otp-resend-btn-wrap').style.display  = 'none';
+      document.getElementById('otp-countdown').textContent = s;
+      document.getElementById('otp-resend-text').style.display = '';
+      document.getElementById('otp-resend-btn-wrap').style.display = 'none';
       otpResendTimer = setInterval(() => {
-        s--;
-        document.getElementById('otp-countdown').textContent = s;
+        s--; document.getElementById('otp-countdown').textContent = s;
         if (s <= 0) {
           clearInterval(otpResendTimer);
-          document.getElementById('otp-resend-text').style.display    = 'none';
+          document.getElementById('otp-resend-text').style.display = 'none';
           document.getElementById('otp-resend-btn-wrap').style.display = '';
           document.getElementById('btn-reenviar').disabled = false;
         }
       }, 1000);
     }
 
-    // ── Entra no app ───────────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // ENTRAR / SAIR
+    // ════════════════════════════════════════════════════
     function entrarNoApp() {
-      document.getElementById('login-screen').style.display    = 'none';
+      document.getElementById('login-screen').style.display   = 'none';
       document.getElementById('booking-content').style.display = '';
-
       const iniciais = (clienteLogado.nome || '?').split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
-      document.getElementById('hdr-right').innerHTML = `
-        <div class="user-chip">
-          <div class="user-avatar">${iniciais}</div>
-          <span>${clienteLogado.nome.split(' ')[0]}</span>
-        </div>`;
-
-      document.getElementById('confirm-avatar').textContent     = iniciais;
-      document.getElementById('confirm-nome').textContent       = clienteLogado.nome;
-      document.getElementById('confirm-email-txt').textContent  = clienteLogado.email;
+      document.getElementById('hdr-right').innerHTML = `<div class="user-chip"><div class="user-avatar">${iniciais}</div><span>${clienteLogado.nome.split(' ')[0]}</span></div>`;
+      document.getElementById('confirm-avatar').textContent    = iniciais;
+      document.getElementById('confirm-nome').textContent      = clienteLogado.nome;
+      document.getElementById('confirm-email-txt').textContent = clienteLogado.email;
     }
-
     function voltarParaLogin() {
       clienteLogado = null;
       try { localStorage.removeItem('cj_cliente'); } catch(_) {}
-      document.getElementById('login-screen').style.display    = '';
+      document.getElementById('login-screen').style.display   = '';
       document.getElementById('booking-content').style.display = 'none';
       document.getElementById('hdr-right').innerHTML = '';
       resetarParaEmail();
     }
 
-    // ── Navegação de steps ─────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // ABAS: Agendar / Histórico
+    // ════════════════════════════════════════════════════
+    function mostrarAba(aba) {
+      document.getElementById('aba-agendar').style.display   = aba === 'agendar'   ? '' : 'none';
+      document.getElementById('aba-historico').style.display = aba === 'historico' ? '' : 'none';
+      document.getElementById('nav-agendar').classList.toggle('active',   aba === 'agendar');
+      document.getElementById('nav-historico').classList.toggle('active', aba === 'historico');
+      if (aba === 'historico') carregarHistorico();
+    }
+
+    async function carregarHistorico() {
+      const container = document.getElementById('lista-historico');
+      container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text2);font-size:0.85rem;">Carregando...</div>';
+      const lista = await api({ action: 'listarAgendamentosCliente', email_cliente: clienteLogado.email, id_estabelecimento: SALON_ID });
+      if (!Array.isArray(lista) || !lista.length) {
+        container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Nenhum agendamento encontrado</p></div>';
+        return;
+      }
+      // Ordena do mais recente ao mais antigo
+      lista.sort((a, b) => {
+        const da = normalizarData(a.data) + ' ' + normalizarHorario(a.horario);
+        const db = normalizarData(b.data) + ' ' + normalizarHorario(b.horario);
+        return da < db ? 1 : -1;
+      });
+      const statusLabel = { confirmado:'✅ Confirmado', selecionando:'⏳ Aguardando Pix', cancelado:'❌ Cancelado', expirado:'⏱ Expirado' };
+      const statusColor = { confirmado:'var(--green)', selecionando:'var(--gold)', cancelado:'var(--red)', expirado:'var(--text3)' };
+      container.innerHTML = lista.map(ag => `
+        <div class="card hist-card fade-in">
+          <div class="hist-hora">${normalizarHorario(ag.horario)}</div>
+          <div class="hist-info">${formatarData(normalizarData(ag.data))}</div>
+          ${ag.nome_servico ? `<div class="hist-info">💈 ${ag.nome_servico}</div>` : ''}
+          ${ag.nome_prof    ? `<div class="hist-info">✂️ ${ag.nome_prof}</div>`    : ''}
+          <div class="hist-status" style="color:${statusColor[ag.status] || 'var(--text2)'};">${statusLabel[ag.status] || ag.status}</div>
+        </div>`).join('');
+    }
+
+    function normalizarData(v) {
+      if (!v) return '';
+      if (v instanceof Date) return v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
+      return String(v).substring(0, 10);
+    }
+    function normalizarHorario(v) {
+      if (!v && v !== 0) return '--:--';
+      if (typeof v === 'string' && v.includes(':')) return v.substring(0, 5);
+      if (v instanceof Date) return String(v.getHours()).padStart(2,'0') + ':' + String(v.getMinutes()).padStart(2,'0');
+      if (typeof v === 'number') { const m = Math.round(v*24*60); return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+      return String(v).substring(0, 5);
+    }
+
+    // ════════════════════════════════════════════════════
+    // STEPS
+    // ════════════════════════════════════════════════════
     function irParaStep(n) {
       document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i + 1 === n));
-      document.querySelectorAll('.step-dot').forEach((d, i) => {
-        d.classList.toggle('active', i + 1 === n);
-        d.classList.toggle('done', i + 1 < n);
-      });
+      document.querySelectorAll('.step-dot').forEach((d, i) => { d.classList.toggle('active', i + 1 === n); d.classList.toggle('done', i + 1 < n); });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -519,13 +484,17 @@
     document.getElementById('btn-back-2').onclick = () => irParaStep(2);
     document.getElementById('btn-back-3').onclick = async () => {
       if (agendamentoId) await api({ action: 'cancelarAgendamento', id: agendamentoId });
-      clearInterval(timerInterval);
-      irParaStep(3);
+      clearInterval(timerInterval); irParaStep(3);
     };
 
     document.getElementById('btn-step1').onclick = () => {
       if (!selectedProf) { mostrarToast('Selecione um profissional', 'erro'); return; }
       if (!selectedServ) { mostrarToast('Selecione um serviço', 'erro'); return; }
+      // Mostra duração do serviço selecionado nos slots
+      const durInfo = document.getElementById('slot-dur-info');
+      if (durInfo && selectedServ.duracao_minutos) {
+        durInfo.textContent = `⏱ Duração do serviço: ${selectedServ.duracao_minutos} min — os slots mostram apenas horários com espaço suficiente.`;
+      }
       irParaStep(2);
     };
 
@@ -543,28 +512,21 @@
       const data = document.getElementById('data-escolhida').value;
       mostrarLoading(true);
       const res = await api({
-        action:             'criarAgendamento',
-        id_estabelecimento: SALON_ID,
-        id_cabeleireiro:    selectedProf.id,
-        id_servico:         selectedServ.id,
-        nome_cliente:       clienteLogado.nome,
-        telefone_cliente:   '',
-        email_cliente:      clienteLogado.email,
-        data,
-        horario: selectedSlot
+        action: 'criarAgendamento', id_estabelecimento: SALON_ID,
+        id_cabeleireiro: selectedProf.id, id_servico: selectedServ.id,
+        nome_cliente: clienteLogado.nome, telefone_cliente: '',
+        email_cliente: clienteLogado.email, data, horario: selectedSlot
       });
       mostrarLoading(false);
       if (res.erro) { mostrarToast(res.erro, 'erro'); return; }
       agendamentoId = res.id;
       document.getElementById('pix-key').textContent = res.chave_pix || CONFIG.CHAVE_PIX_PADRAO;
-      iniciarTimer();
-      irParaStep(4);
+      iniciarTimer(); irParaStep(4);
     };
 
-    document.getElementById('btn-copiar-pix').onclick = () => {
+    document.getElementById('btn-copiar-pix').onclick = () =>
       navigator.clipboard.writeText(document.getElementById('pix-key').textContent)
         .then(() => mostrarToast('Chave Pix copiada!', 'sucesso'));
-    };
 
     document.getElementById('btn-verificar').onclick = () => {
       mostrarToast('Aguardando confirmação do salão...', 'sucesso');
@@ -578,29 +540,24 @@
             <div style="font-size:0.78rem;color:var(--text2);margin-bottom:4px;">Código do agendamento</div>
             <div style="font-family:var(--font-title);font-weight:700;color:var(--gold);font-size:1.1rem;letter-spacing:0.1em;">${agendamentoId}</div>
           </div>
+          <button class="btn btn-outline btn-full" style="margin-top:20px;" onclick="mostrarAba('historico')">Ver meus agendamentos →</button>
         </div>`;
     };
 
-    // ── Timer Pix ──────────────────────────────────────────
     function iniciarTimer() {
-      timerSeconds = CONFIG.TEMPO_RESERVA * 60;
-      clearInterval(timerInterval);
+      timerSeconds = CONFIG.TEMPO_RESERVA * 60; clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timerSeconds--;
-        const m = String(Math.floor(timerSeconds / 60)).padStart(2,'0');
-        const s = String(timerSeconds % 60).padStart(2,'0');
+        const m = String(Math.floor(timerSeconds/60)).padStart(2,'0'), s = String(timerSeconds%60).padStart(2,'0');
         document.getElementById('timer-text').textContent = m + ':' + s;
-        document.getElementById('timer-fill').style.width =
-          (timerSeconds / (CONFIG.TEMPO_RESERVA * 60) * 100) + '%';
-        if (timerSeconds <= 0) {
-          clearInterval(timerInterval);
-          mostrarToast('Tempo expirado! Faça um novo agendamento.', 'erro');
-          irParaStep(1);
-        }
+        document.getElementById('timer-fill').style.width = (timerSeconds/(CONFIG.TEMPO_RESERVA*60)*100) + '%';
+        if (timerSeconds <= 0) { clearInterval(timerInterval); mostrarToast('Tempo expirado!', 'erro'); irParaStep(1); }
       }, 1000);
     }
 
-    // ── Slots ──────────────────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // SLOTS — respeita duração do serviço selecionado
+    // ════════════════════════════════════════════════════
     const dataInput = document.getElementById('data-escolhida');
     dataInput.min   = dataHoje();
     dataInput.value = dataHoje();
@@ -610,38 +567,35 @@
       const data = dataInput.value;
       if (!data) return;
       mostrarLoading(true);
-      const res = await api({ action: 'getHorariosDisponiveis', id_estabelecimento: SALON_ID, data });
+      const res = await api({
+        action: 'getHorariosDisponiveis',
+        id_estabelecimento: SALON_ID,
+        data,
+        duracao_minutos: selectedServ ? selectedServ.duracao_minutos : 30
+      });
       mostrarLoading(false);
       const grid = document.getElementById('slot-grid');
       selectedSlot = null;
-      if (res.erro || !res.slots) {
-        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Erro ao carregar horários</p>'; return;
-      }
-      if (!res.slots.length) {
-        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Nenhum horário disponível</p>'; return;
-      }
+      if (res.erro || !res.slots) { grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Erro ao carregar horários</p>'; return; }
+      if (!res.slots.length) { grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Nenhum horário disponível</p>'; return; }
       grid.innerHTML = res.slots.map(slot => {
-        const cls = slot.status === 'disponivel'  ? 'slot-disponivel'   :
-                    slot.status === 'selecionando' ? 'slot-selecionando' :
-                    slot.status === 'confirmado'   ? 'slot-confirmado'   : 'slot-bloqueado';
-        return `<button class="slot ${cls}" ${slot.status === 'disponivel' ? `onclick="selecionarSlot('${slot.horario}', this)"` : 'disabled'}>${slot.horario}</button>`;
+        const cls = slot.status === 'disponivel' ? 'slot-disponivel' : slot.status === 'selecionando' ? 'slot-selecionando' : slot.status === 'confirmado' ? 'slot-confirmado' : 'slot-bloqueado';
+        return `<button class="slot ${cls}" ${slot.status === 'disponivel' ? `onclick="selecionarSlot('${slot.horario}',this)"` : 'disabled'}>${slot.horario}</button>`;
       }).join('');
     }
 
     function selecionarSlot(horario, el) {
       document.querySelectorAll('.slot').forEach(s => {
         s.classList.remove('slot-selected');
-        if (s.classList.contains('slot-disponivel-temp')) {
-          s.classList.remove('slot-disponivel-temp');
-          s.classList.add('slot-disponivel');
-        }
+        if (s.classList.contains('slot-disponivel-temp')) { s.classList.remove('slot-disponivel-temp'); s.classList.add('slot-disponivel'); }
       });
-      el.classList.remove('slot-disponivel');
-      el.classList.add('slot-selected', 'slot-disponivel-temp');
+      el.classList.remove('slot-disponivel'); el.classList.add('slot-selected', 'slot-disponivel-temp');
       selectedSlot = horario;
     }
 
-    // ── Init ───────────────────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // INIT
+    // ════════════════════════════════════════════════════
     async function init() {
       mostrarLoading(true);
       const info = await api({ action: 'getInfoSalao', id: SALON_ID });
@@ -652,8 +606,7 @@
       document.getElementById('salao-nome').textContent = info.estabelecimento.nome;
       document.title = 'Agendar — ' + info.estabelecimento.nome;
       if (info.estabelecimento.logo_url) {
-        document.getElementById('salao-logo').innerHTML =
-          `<img src="${info.estabelecimento.logo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+        document.getElementById('salao-logo').innerHTML = `<img src="${info.estabelecimento.logo_url}" style="width:100%;height:100%;object-fit:cover;">`;
       }
       const ab = info.estabelecimento.horario_abertura  || '08:00';
       const fe = info.estabelecimento.horario_fechamento || '18:00';
@@ -663,20 +616,20 @@
       const chips = document.getElementById('prof-chips');
       chips.innerHTML = (info.cabeleireiros && info.cabeleireiros.length)
         ? info.cabeleireiros.map(p => `
-            <div class="prof-chip" onclick="selecionarProf(this, '${p.id}')">
+            <div class="prof-chip" data-id="${p.id}" onclick="selecionarProf(this,'${p.id}')">
               <div style="width:52px;height:52px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;">
                 ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '✂️'}
               </div>
-              <div class="prof-chip-nome">${p.nome}</div>
+              <div style="font-size:0.82rem;font-weight:600;text-align:center;">${p.nome}</div>
               ${p.especialidades ? `<div style="font-size:0.72rem;color:var(--text2);text-align:center;">${p.especialidades}</div>` : ''}
             </div>`).join('')
         : '<p style="color:var(--text2);font-size:0.85rem;">Nenhum profissional disponível</p>';
 
-      // Serviços
+      // Serviços — usa data-id no elemento para identificação segura
       const servList = document.getElementById('serv-list');
       servList.innerHTML = (info.servicos && info.servicos.length)
         ? info.servicos.map(s => `
-            <div class="serv-chip" onclick="selecionarServ(this, '${s.id}')">
+            <div class="serv-chip" data-id="${s.id}" onclick="selecionarServ(this,'${s.id}')">
               <div>
                 <div style="font-weight:600;font-size:0.95rem;">${s.nome_servico}</div>
                 <div style="font-size:0.78rem;color:var(--text2);">${s.duracao_minutos} min</div>
@@ -686,21 +639,22 @@
         : '<p style="color:var(--text2);font-size:0.85rem;">Nenhum serviço disponível</p>';
 
       carregarSlots();
-
-      // Pula login se já tem sessão salva
       if (carregarSessao()) entrarNoApp();
     }
 
+    // ── Seleção usa data-id para encontrar no array — evita o bug de selected ──
     function selecionarProf(el, id) {
       document.querySelectorAll('.prof-chip').forEach(c => c.classList.remove('selected'));
       el.classList.add('selected');
-      selectedProf = salonInfo.cabeleireiros.find(p => p.id === id);
+      selectedProf = salonInfo.cabeleireiros.find(p => String(p.id) === String(id));
     }
 
     function selecionarServ(el, id) {
       document.querySelectorAll('.serv-chip').forEach(c => c.classList.remove('selected'));
       el.classList.add('selected');
-      selectedServ = salonInfo.servicos.find(s => s.id === id);
+      selectedServ = salonInfo.servicos.find(s => String(s.id) === String(id));
+      // Recarrega slots com nova duração ao trocar serviço no step 2
+      if (document.getElementById('step-2').classList.contains('active')) carregarSlots();
     }
 
     init();
