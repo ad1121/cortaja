@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,35 +8,125 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <style>
+    /* ── Modo Claro ─────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg:#F5F3EF; --bg2:#EDEAE4; --bg3:#E4E0D8; --bg4:#D8D3C8;
+      --text:#1A1814; --text2:#6B6560; --text3:#9A9590;
+    }
+    [data-theme="light"] .header { background:rgba(245,243,239,0.92); }
+    [data-theme="light"] .card   { background:#fff; border-color:rgba(0,0,0,0.07); }
+    [data-theme="light"] .bottom-nav { background:rgba(245,243,239,0.96); border-color:rgba(0,0,0,0.08); }
+
+    /* ── Cards estabelecimento ──────────────────────────── */
     .est-card { display:flex; gap:14px; align-items:flex-start; }
     .est-info { flex:1; min-width:0; }
     .est-nome { font-family:var(--font-title); font-weight:700; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .est-resp { font-size:0.82rem; color:var(--text2); margin-top:3px; }
 
-    /* Detalhes extras do estabelecimento */
-    .est-details { margin-top:12px; display:flex; flex-direction:column; gap:5px; }
+    /* ── Accordion ──────────────────────────────────────── */
+    .est-accordion-btn {
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      width:100%; margin-top:10px; padding:6px;
+      background:none; border:none; color:var(--text3);
+      font-size:0.75rem; cursor:pointer; font-family:var(--font-body);
+      border-top:1px solid rgba(255,255,255,0.05);
+      transition:color var(--transition);
+    }
+    .est-accordion-btn:hover { color:var(--text2); }
+    .est-accordion-btn .arrow { transition:transform 0.25s; display:inline-block; }
+    .est-accordion-btn.open .arrow { transform:rotate(180deg); }
+    .est-accordion-body { display:none; }
+    .est-accordion-body.open { display:block; }
+
+    /* ── Detalhes ───────────────────────────────────────── */
+    .est-details { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
     .est-detail-row { display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text2); }
-    .est-detail-row span.icon { font-size:0.9rem; flex-shrink:0; width:18px; text-align:center; }
+    .est-detail-row .icon { font-size:0.9rem; flex-shrink:0; width:18px; text-align:center; }
     .est-detail-row strong { color:var(--text); font-weight:500; }
 
-    /* Mini stats do estabelecimento */
-    .est-stats { display:flex; gap:8px; margin-top:14px; }
+    /* ── Mini stats ─────────────────────────────────────── */
+    .est-stats { display:flex; gap:8px; margin-bottom:12px; }
     .est-stat { flex:1; background:var(--bg3); border-radius:var(--radius-sm); padding:10px 8px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
     .est-stat-val { font-family:var(--font-title); font-size:1.1rem; font-weight:700; color:var(--gold); }
     .est-stat-lbl { font-size:0.65rem; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:0.05em; }
 
-    .est-links { display:flex; flex-direction:column; gap:6px; margin-top:14px; }
+    /* ── Links ──────────────────────────────────────────── */
+    .est-links { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
     .link-box { background:var(--bg3); border-radius:var(--radius-sm); padding:10px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.06); transition:background var(--transition); }
     .link-box:active { background:var(--bg4); }
     .link-label { font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:2px; }
     .link-url { font-size:0.78rem; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
     .copy-btn { color:var(--text2); flex-shrink:0; background:none; border:none; cursor:pointer; font-size:0.85rem; }
-    .est-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .est-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
-    /* Accordion de detalhes */
-    .est-accordion-toggle { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:12px; background:none; border:none; color:var(--text3); font-size:0.75rem; cursor:pointer; font-family:var(--font-body); width:100%; padding:4px; }
-    .est-accordion-body { display:none; }
-    .est-accordion-body.open { display:block; }
+    /* ── Barra de pesquisa ──────────────────────────────── */
+    .search-bar {
+      display:flex; align-items:center; gap:10px;
+      background:var(--bg2); border-radius:var(--radius-md);
+      border:1.5px solid rgba(255,255,255,0.06);
+      padding:10px 14px; margin-bottom:16px;
+      transition:border-color var(--transition);
+    }
+    .search-bar:focus-within { border-color:rgba(201,168,76,0.4); }
+    .search-bar input {
+      flex:1; background:none; border:none; outline:none;
+      color:var(--text); font-size:0.9rem; font-family:var(--font-body);
+    }
+    .search-bar input::placeholder { color:var(--text3); }
+    .search-bar .search-icon { color:var(--text3); font-size:1rem; flex-shrink:0; }
+    .search-bar .search-clear {
+      background:none; border:none; color:var(--text3);
+      cursor:pointer; font-size:0.85rem; padding:0; display:none;
+    }
+    .search-bar .search-clear.show { display:block; }
+    .search-empty { text-align:center; padding:32px 0; color:var(--text2); font-size:0.85rem; }
+
+    /* ── Abas da nav ────────────────────────────────────── */
+    .nav-page { display:none; }
+    .nav-page.active { display:block; }
+
+    /* ── Planilha ───────────────────────────────────────── */
+    .sheet-iframe-wrap {
+      position:relative;
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.07);
+      background:var(--bg2);
+      margin-bottom:16px;
+    }
+    .sheet-iframe-wrap iframe {
+      width:100%; height:480px; border:none; display:block;
+    }
+    .sheet-placeholder {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; height:220px; gap:12px;
+      color:var(--text2); font-size:0.85rem; text-align:center; padding:20px;
+    }
+
+    /* ── Config ─────────────────────────────────────────── */
+    .config-section-title { font-size:0.78rem; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin:20px 0 10px; }
+    .color-swatches { display:flex; gap:10px; flex-wrap:wrap; }
+    .swatch { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all 0.2s; flex-shrink:0; }
+    .swatch.active { border-color:var(--text); transform:scale(1.15); }
+    .font-options { display:flex; flex-direction:column; gap:8px; }
+    .font-opt { padding:12px 16px; border-radius:var(--radius-md); background:var(--bg3); border:2px solid transparent; cursor:pointer; transition:all 0.2s; }
+    .font-opt.active { border-color:var(--gold); background:var(--gold-dim); }
+    .font-opt-name { font-size:0.85rem; font-weight:600; }
+    .font-opt-preview { font-size:1rem; color:var(--text2); margin-top:2px; }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .toggle-label { font-size:0.9rem; font-weight:500; }
+    .toggle-sub { font-size:0.75rem; color:var(--text2); margin-top:2px; }
+    .toggle { position:relative; width:48px; height:26px; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:var(--bg4); border-radius:99px; cursor:pointer; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; width:20px; height:20px; border-radius:50%; background:#fff; left:3px; top:3px; transition:0.3s; }
+    .toggle input:checked + .toggle-slider { background:var(--gold); }
+    .toggle input:checked + .toggle-slider::before { transform:translateX(22px); }
+
+    /* ── Skeleton ───────────────────────────────────────── */
+    .skeleton { background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:var(--radius-sm); }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-est { height:100px; margin-bottom:10px; border-radius:var(--radius-md); }
   </style>
 </head>
 <body>
@@ -45,10 +135,7 @@
   <!-- PWA Banner -->
   <div id="pwa-banner">
     <div class="pwa-icon">✂️</div>
-    <div class="pwa-text">
-      <h4>Instalar CortaJá</h4>
-      <p>Acesse mais rápido pela tela inicial</p>
-    </div>
+    <div class="pwa-text"><h4>Instalar CortaJá</h4><p>Acesse mais rápido pela tela inicial</p></div>
     <div class="pwa-actions">
       <button class="btn btn-primary btn-sm" id="pwa-install-btn">Instalar</button>
       <button class="btn btn-ghost btn-sm" id="pwa-dismiss-btn">Depois</button>
@@ -56,51 +143,216 @@
   </div>
 
   <div class="page">
-    <!-- Header -->
     <header class="header">
       <div class="header-inner">
         <div class="logo">Corta<span>Já</span></div>
-        <span class="badge badge-gold">Admin</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge badge-gold">Admin</span>
+          <button id="btn-toggle-theme" title="Alternar tema" style="background:none;border:none;cursor:pointer;font-size:1.1rem;padding:4px;">🌙</button>
+        </div>
       </div>
     </header>
 
-    <!-- Stats -->
-    <div class="section" id="stats-section">
-      <div class="grid-2">
-        <div class="stat-card fade-in">
-          <div class="stat-value" id="stat-total">–</div>
-          <div class="stat-label">Salões</div>
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: INÍCIO                                     -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="page-inicio" class="nav-page active">
+
+      <!-- Stats -->
+      <div class="section" id="stats-section">
+        <div class="grid-2">
+          <div class="stat-card fade-in">
+            <div class="stat-value" id="stat-total">–</div>
+            <div class="stat-label">Salões</div>
+          </div>
+          <div class="stat-card fade-in" style="animation-delay:.08s">
+            <div class="stat-value" id="stat-ativos">–</div>
+            <div class="stat-label">Ativos</div>
+          </div>
         </div>
-        <div class="stat-card fade-in" style="animation-delay:.08s">
-          <div class="stat-value" id="stat-ativos">–</div>
-          <div class="stat-label">Ativos</div>
+      </div>
+
+      <!-- Lista -->
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="section-title" style="margin:0">Estabelecimentos</div>
+          <button class="btn btn-primary btn-sm" id="btn-novo">+ Novo</button>
+        </div>
+
+        <!-- Barra de pesquisa -->
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Buscar por nome, responsável, telefone...">
+          <button class="search-clear" id="search-clear">✕</button>
+        </div>
+
+        <div id="lista-est">
+          <div class="skeleton sk-est"></div>
+          <div class="skeleton sk-est"></div>
+          <div class="skeleton sk-est"></div>
         </div>
       </div>
     </div>
 
-    <!-- Lista de estabelecimentos -->
-    <div class="section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="section-title" style="margin:0">Estabelecimentos</div>
-        <button class="btn btn-primary btn-sm" id="btn-novo">+ Novo</button>
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PLANILHA                                   -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="page-planilha" class="nav-page">
+      <div class="section">
+        <div class="section-title">Planilha de Dados</div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:14px;">
+            Acesse e edite a planilha Google Sheets diretamente pelo link abaixo. Os dados de agendamentos, profissionais e serviços ficam armazenados nela.
+          </p>
+          <div id="sheet-url-box" style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <input class="input" id="sheet-url-input" type="url" placeholder="Cole aqui a URL da sua planilha Google Sheets" style="flex:1;margin:0;font-size:0.82rem;">
+            <button class="btn btn-primary btn-sm" onclick="salvarSheetUrl()">Salvar</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" id="btn-abrir-sheet" onclick="abrirSheet()">🔗 Abrir no Google Sheets</button>
+            <button class="btn btn-ghost btn-sm" onclick="copiarSheetUrl()">📋 Copiar link</button>
+          </div>
+        </div>
+
+        <!-- Prévia embutida da planilha -->
+        <div id="sheet-preview-wrap">
+          <div class="sheet-placeholder" id="sheet-placeholder">
+            <div style="font-size:2.5rem;">📊</div>
+            <p>Cole o link da planilha acima para visualizá-la aqui.</p>
+            <p style="font-size:0.75rem;color:var(--text3);">A planilha precisa estar com acesso "Qualquer pessoa com o link pode visualizar".</p>
+          </div>
+          <div class="sheet-iframe-wrap" id="sheet-iframe-wrap" style="display:none;">
+            <iframe id="sheet-iframe" src="" title="Planilha CortaJá"></iframe>
+          </div>
+        </div>
+
+        <!-- Guia das abas necessárias -->
+        <div class="card" style="margin-top:16px;">
+          <div style="font-weight:600;font-size:0.9rem;margin-bottom:12px;">📋 Abas necessárias na planilha</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:600;color:var(--gold);">estabelecimentos</div>
+              <div style="font-size:0.73rem;color:var(--text3);margin-top:3px;">id · nome · responsavel · telefone · email · logo_url · horario_abertura · horario_fechamento · chave_pix · link_dashboard · link_booking · data_cadastro · status</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:600;color:var(--gold);">cabeleireiros</div>
+              <div style="font-size:0.73rem;color:var(--text3);margin-top:3px;">id · id_estabelecimento · nome · foto_url · especialidades · email · telefone · horario_entrada · horario_saida · chave_pix · status</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:600;color:var(--gold);">servicos</div>
+              <div style="font-size:0.73rem;color:var(--text3);margin-top:3px;">id · id_estabelecimento · nome_servico · preco · duracao_minutos · status</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:600;color:var(--gold);">agendamentos</div>
+              <div style="font-size:0.73rem;color:var(--text3);margin-top:3px;">id · id_estabelecimento · id_cabeleireiro · id_servico · nome_cliente · telefone_cliente · email_cliente · data · horario · status · id_pagamento · valor_taxa · data_criacao · expira_em</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:600;color:var(--gold);">produtos</div>
+              <div style="font-size:0.73rem;color:var(--text3);margin-top:3px;">id · id_estabelecimento · nome · descricao · preco · foto_url · status</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="stack" id="lista-est">
-        <div class="empty"><div class="empty-icon">💈</div><p>Nenhum salão cadastrado ainda</p></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: CONFIGURAÇÕES                              -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="page-config" class="nav-page">
+      <div class="section">
+        <div class="section-title">Configurações Globais</div>
+
+        <!-- Modo claro/escuro -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="toggle-row" style="border:none;padding:0;">
+            <div>
+              <div class="toggle-label">☀️ Modo Claro</div>
+              <div class="toggle-sub">Alterna entre tema escuro e claro</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-light-mode">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Cor de destaque -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="config-section-title">Cor de Destaque</div>
+          <div class="color-swatches" id="color-swatches">
+            <div class="swatch active" data-color="#C9A84C" style="background:#C9A84C;" title="Dourado"></div>
+            <div class="swatch" data-color="#7C4DFF" style="background:#7C4DFF;" title="Roxo"></div>
+            <div class="swatch" data-color="#00BCD4" style="background:#00BCD4;" title="Ciano"></div>
+            <div class="swatch" data-color="#FF5252" style="background:#FF5252;" title="Vermelho"></div>
+            <div class="swatch" data-color="#52C07A" style="background:#52C07A;" title="Verde"></div>
+            <div class="swatch" data-color="#FF9800" style="background:#FF9800;" title="Laranja"></div>
+            <div class="swatch" data-color="#E91E8C" style="background:#E91E8C;" title="Rosa"></div>
+            <div class="swatch" data-color="#90A4AE" style="background:#90A4AE;" title="Cinza Azulado"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:14px;">
+            <label style="font-size:0.82rem;color:var(--text2);">Cor personalizada:</label>
+            <input type="color" id="custom-color" value="#C9A84C" style="width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:50%;overflow:hidden;">
+          </div>
+        </div>
+
+        <!-- Fonte -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="config-section-title">Fonte do Sistema</div>
+          <div class="font-options">
+            <div class="font-opt active" data-font="playfair" data-url="">
+              <div class="font-opt-name">Playfair Display</div>
+              <div class="font-opt-preview" style="font-family:'Playfair Display',serif;">Estilo Clássico — Barbearia Premium</div>
+            </div>
+            <div class="font-opt" data-font="cormorant" data-url="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap">
+              <div class="font-opt-name">Cormorant Garamond</div>
+              <div class="font-opt-preview" style="font-family:'Cormorant Garamond',serif;">Estilo Editorial — Elegante</div>
+            </div>
+            <div class="font-opt" data-font="montserrat" data-url="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap">
+              <div class="font-opt-name">Montserrat</div>
+              <div class="font-opt-preview" style="font-family:'Montserrat',sans-serif;">Estilo Moderno — Clean</div>
+            </div>
+            <div class="font-opt" data-font="oswald" data-url="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap">
+              <div class="font-opt-name">Oswald</div>
+              <div class="font-opt-preview" style="font-family:'Oswald',sans-serif;">Estilo Barbershop — Forte</div>
+            </div>
+            <div class="font-opt" data-font="inter" data-url="">
+              <div class="font-opt-name">Inter</div>
+              <div class="font-opt-preview" style="font-family:'Inter',sans-serif;">Estilo Minimalista — Neutro</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- URL da API -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="config-section-title">URL da API (Apps Script)</div>
+          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;">Cole aqui a URL de implantação do seu Apps Script.</p>
+          <input class="input" id="config-api-url" type="url" placeholder="https://script.google.com/macros/s/..." style="margin-bottom:10px;">
+          <button class="btn btn-primary btn-full" onclick="salvarApiUrl()">Salvar URL da API</button>
+        </div>
+
+        <!-- Chave Pix padrão -->
+        <div class="card">
+          <div class="config-section-title">Chave Pix Padrão</div>
+          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;">Usada quando o profissional não tem chave própria.</p>
+          <input class="input" id="config-pix" type="text" placeholder="Telefone, CPF ou e-mail" style="margin-bottom:10px;">
+          <button class="btn btn-primary btn-full" onclick="salvarPixPadrao()">Salvar Chave Pix</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active">
+    <button class="nav-item active" id="nav-inicio" onclick="irPara('inicio')">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Início
     </button>
-    <button class="nav-item" id="nav-relatorios">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Relatórios
+    <button class="nav-item" id="nav-planilha" onclick="irPara('planilha')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      Planilha
     </button>
-    <button class="nav-item" id="nav-config">
+    <button class="nav-item" id="nav-config" onclick="irPara('config')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Config
     </button>
@@ -112,42 +364,18 @@
       <div class="modal-handle"></div>
       <h3 class="modal-title">Novo Estabelecimento</h3>
       <div class="stack">
-        <div class="input-group">
-          <label class="input-label">Nome do Salão *</label>
-          <input class="input" id="f-nome" placeholder="Ex: Barbearia Elite" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Responsável *</label>
-          <input class="input" id="f-resp" placeholder="Nome completo" type="text">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Telefone / WhatsApp *</label>
-          <input class="input" id="f-tel" placeholder="(61) 99999-9999" type="tel">
-        </div>
-        <div class="input-group">
-          <label class="input-label">E-mail</label>
-          <input class="input" id="f-email" placeholder="email@exemplo.com" type="email">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Endereço</label>
-          <input class="input" id="f-end" placeholder="Rua, número, bairro" type="text">
-        </div>
+        <div class="input-group"><label class="input-label">Nome do Salão *</label><input class="input" id="f-nome" placeholder="Ex: Barbearia Elite" type="text"></div>
+        <div class="input-group"><label class="input-label">Responsável *</label><input class="input" id="f-resp" placeholder="Nome completo" type="text"></div>
+        <div class="input-group"><label class="input-label">Telefone / WhatsApp *</label><input class="input" id="f-tel" placeholder="(61) 99999-9999" type="tel"></div>
+        <div class="input-group"><label class="input-label">E-mail</label><input class="input" id="f-email" placeholder="email@exemplo.com" type="email"></div>
+        <div class="input-group"><label class="input-label">Endereço</label><input class="input" id="f-end" placeholder="Rua, número, bairro" type="text"></div>
         <div class="grid-2">
-          <div class="input-group">
-            <label class="input-label">Abre</label>
-            <input class="input" id="f-abre" type="time" value="08:00">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Fecha</label>
-            <input class="input" id="f-fecha" type="time" value="18:00">
-          </div>
+          <div class="input-group"><label class="input-label">Abre</label><input class="input" id="f-abre" type="time" value="08:00"></div>
+          <div class="input-group"><label class="input-label">Fecha</label><input class="input" id="f-fecha" type="time" value="18:00"></div>
         </div>
-        <div class="input-group">
-          <label class="input-label">Chave Pix</label>
-          <input class="input" id="f-pix" placeholder="Telefone, CPF ou e-mail" type="text">
-        </div>
+        <div class="input-group"><label class="input-label">Chave Pix</label><input class="input" id="f-pix" placeholder="Telefone, CPF ou e-mail" type="text"></div>
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-ghost btn-full" id="btn-cancelar-modal">Cancelar</button>
+          <button class="btn btn-ghost btn-full" onclick="fecharModal()">Cancelar</button>
           <button class="btn btn-primary btn-full" id="btn-salvar-est">Salvar</button>
         </div>
       </div>
@@ -156,216 +384,323 @@
 
   <script src="config.js"></script>
   <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+
     // ── PWA ────────────────────────────────────────────────
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-banner').classList.add('show'); });
+    document.getElementById('pwa-install-btn').onclick = async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } document.getElementById('pwa-banner').classList.remove('show'); };
+    document.getElementById('pwa-dismiss-btn').onclick = () => document.getElementById('pwa-banner').classList.remove('show');
+
+    // ════════════════════════════════════════════════════
+    // TEMA GLOBAL
+    // ════════════════════════════════════════════════════
+    const THEME_KEY = 'cj_admin_theme';
+    function lerTema()      { try { return JSON.parse(localStorage.getItem(THEME_KEY)) || {}; } catch(_) { return {}; } }
+    function salvarTema(o)  { try { localStorage.setItem(THEME_KEY, JSON.stringify({ ...lerTema(), ...o })); } catch(_) {} }
+
+    function aplicarTema(t) {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', t.mode === 'light' ? 'light' : 'dark');
+      document.getElementById('btn-toggle-theme').textContent = t.mode === 'light' ? '🌙' : '☀️';
+      const tl = document.getElementById('toggle-light-mode');
+      if (tl) tl.checked = t.mode === 'light';
+      if (t.color) {
+        root.style.setProperty('--gold', t.color);
+        root.style.setProperty('--gold-dim', t.color + '26');
+        document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.color === t.color));
+        const cc = document.getElementById('custom-color');
+        if (cc) cc.value = t.color;
+      }
+      if (t.font) {
+        const opt = document.querySelector(`.font-opt[data-font="${t.font}"]`);
+        if (opt) {
+          document.querySelectorAll('.font-opt').forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          if (opt.dataset.url) { const l = document.createElement('link'); l.rel='stylesheet'; l.href=opt.dataset.url; document.head.appendChild(l); }
+          const fm = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif" };
+          if (fm[t.font]) root.style.setProperty('--font-title', fm[t.font]);
+        }
+      }
+    }
+    aplicarTema(lerTema());
+
+    document.getElementById('btn-toggle-theme').onclick = () => {
+      const t = lerTema(); const m = t.mode === 'light' ? 'dark' : 'light';
+      salvarTema({ mode: m }); aplicarTema({ ...t, mode: m });
+    };
+    document.getElementById('toggle-light-mode').onchange = function() {
+      const m = this.checked ? 'light' : 'dark'; salvarTema({ mode: m }); aplicarTema({ ...lerTema(), mode: m });
+    };
+    document.querySelectorAll('.swatch').forEach(s => {
+      s.onclick = () => { salvarTema({ color: s.dataset.color }); aplicarTema({ ...lerTema(), color: s.dataset.color }); };
+    });
+    document.getElementById('custom-color').oninput = function() {
+      salvarTema({ color: this.value }); aplicarTema({ ...lerTema(), color: this.value });
+    };
+    document.querySelectorAll('.font-opt').forEach(opt => {
+      opt.onclick = () => { salvarTema({ font: opt.dataset.font }); aplicarTema({ ...lerTema(), font: opt.dataset.font }); };
+    });
+
+    // ════════════════════════════════════════════════════
+    // NAVEGAÇÃO BOTTOM NAV
+    // ════════════════════════════════════════════════════
+    function irPara(pagina) {
+      ['inicio','planilha','config'].forEach(p => {
+        document.getElementById('page-' + p).classList.toggle('active', p === pagina);
+        document.getElementById('nav-'   + p).classList.toggle('active', p === pagina);
+      });
+      if (pagina === 'planilha') carregarSheetUrl();
+      if (pagina === 'config')   carregarConfigInputs();
     }
 
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('pwa-banner').classList.add('show');
-    });
-    document.getElementById('pwa-install-btn').onclick = async () => {
-      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-      document.getElementById('pwa-banner').classList.remove('show');
-    };
-    document.getElementById('pwa-dismiss-btn').onclick = () => {
-      document.getElementById('pwa-banner').classList.remove('show');
-    };
+    // ════════════════════════════════════════════════════
+    // ESTABELECIMENTOS + PESQUISA
+    // ════════════════════════════════════════════════════
+    let todosEstabelecimentos = [];
 
-    // ── CARREGAR LISTA ─────────────────────────────────────
     async function carregarEstabelecimentos() {
-      mostrarLoading(true);
       const lista = await api({ action: 'listarEstabelecimentos' });
-      mostrarLoading(false);
+      todosEstabelecimentos = Array.isArray(lista) ? lista : [];
 
-      const ativos = Array.isArray(lista) ? lista.filter(e => e.status === 'ativo') : [];
-      document.getElementById('stat-total').textContent = Array.isArray(lista) ? lista.length : 0;
+      const ativos = todosEstabelecimentos.filter(e => e.status === 'ativo');
+      document.getElementById('stat-total').textContent  = todosEstabelecimentos.length;
       document.getElementById('stat-ativos').textContent = ativos.length;
 
+      renderLista(todosEstabelecimentos);
+    }
+
+    function renderLista(lista) {
       const container = document.getElementById('lista-est');
-      if (!Array.isArray(lista) || lista.length === 0) {
-        container.innerHTML = '<div class="empty"><div class="empty-icon">💈</div><p>Nenhum salão cadastrado ainda</p></div>';
+      if (!lista.length) {
+        container.innerHTML = '<div class="search-empty"><div style="font-size:2rem;margin-bottom:8px;">🔍</div><p>Nenhum resultado encontrado</p></div>';
         return;
       }
 
       container.innerHTML = lista.map((e, idx) => {
-        const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
         const hoje = new Date();
-        const diaAtual = diasSemana[hoje.getDay()];
-
-        const horarioAb = e.horario_abertura || '08:00';
-        const horarioFe = e.horario_fechamento || '18:00';
-
-        // Calcula se está aberto agora (simples, baseado só no horário)
         const agora = hoje.getHours() * 60 + hoje.getMinutes();
-        const [hAb, mAb] = horarioAb.split(':').map(Number);
-        const [hFe, mFe] = horarioFe.split(':').map(Number);
+        const [hAb = 8,  mAb = 0]  = (e.horario_abertura  || '08:00').split(':').map(Number);
+        const [hFe = 18, mFe = 0]  = (e.horario_fechamento || '18:00').split(':').map(Number);
         const abertoAgora = agora >= hAb * 60 + mAb && agora < hFe * 60 + mFe;
-
         const chavePix = e.chave_pix || CONFIG.CHAVE_PIX_PADRAO;
+        const dataFormatada = e.data_cadastro ? formatarData(String(e.data_cadastro).substring(0,10)) : '';
 
         return `
-        <div class="card card-gold fade-in" style="animation-delay:${idx * 0.06}s">
+        <div class="card card-gold fade-in" style="animation-delay:${idx * 0.05}s">
+          <!-- Cabeçalho sempre visível -->
           <div class="est-card">
             <div style="width:50px;height:50px;border-radius:10px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:1px solid rgba(201,168,76,0.15);">💈</div>
             <div class="est-info">
               <div class="est-nome">${e.nome}</div>
               <div class="est-resp">${e.responsavel}</div>
-              <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+              <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;">
                 ${e.status === 'ativo'
                   ? '<span class="badge badge-green">Ativo</span>'
                   : '<span class="badge badge-grey">Inativo</span>'}
-                ${abertoAgora
-                  ? '<span class="badge badge-green" style="font-size:0.62rem;">Aberto agora</span>'
-                  : '<span class="badge badge-grey" style="font-size:0.62rem;">Fechado agora</span>'}
+                <span class="badge ${abertoAgora ? 'badge-green' : 'badge-grey'}" style="font-size:0.62rem;">
+                  ${abertoAgora ? 'Aberto agora' : 'Fechado agora'}
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- Detalhes do estabelecimento -->
-          <div class="est-details">
-            <div class="est-detail-row">
-              <span class="icon">📱</span>
-              <strong>${e.telefone}</strong>
-              ${e.email ? `<span style="color:var(--text3)">·</span> <span>${e.email}</span>` : ''}
-            </div>
-            <div class="est-detail-row">
-              <span class="icon">🕐</span>
-              <strong>${horarioAb} – ${horarioFe}</strong>
-              <span style="font-size:0.72rem;color:var(--text3);">hoje: ${diaAtual}</span>
-            </div>
-            ${e.endereco ? `
-            <div class="est-detail-row">
-              <span class="icon">📍</span>
-              <span>${e.endereco}</span>
-            </div>` : ''}
-            <div class="est-detail-row">
-              <span class="icon">💠</span>
-              <span>Pix: <strong>${chavePix}</strong></span>
-            </div>
-            ${e.data_cadastro ? `
-            <div class="est-detail-row">
-              <span class="icon">📅</span>
-              <span>Cadastrado em <strong>${formatarData(String(e.data_cadastro).substring(0,10))}</strong></span>
-            </div>` : ''}
-          </div>
+          <!-- Botão accordion com seta ▼ -->
+          <button class="est-accordion-btn" id="acc-btn-${e.id}" onclick="toggleAccordion('${e.id}')">
+            <span>Ver mais detalhes</span>
+            <span class="arrow">▼</span>
+          </button>
 
-          <!-- Mini stats (se disponíveis na API) -->
-          ${(e.total_agendamentos !== undefined || e.agendamentos_hoje !== undefined) ? `
-          <div class="est-stats">
-            ${e.agendamentos_hoje !== undefined ? `
-            <div class="est-stat">
-              <div class="est-stat-val">${e.agendamentos_hoje}</div>
-              <div class="est-stat-lbl">Hoje</div>
-            </div>` : ''}
-            ${e.total_agendamentos !== undefined ? `
-            <div class="est-stat">
-              <div class="est-stat-val">${e.total_agendamentos}</div>
-              <div class="est-stat-lbl">Total</div>
-            </div>` : ''}
-            ${e.receita_mes !== undefined ? `
-            <div class="est-stat">
-              <div class="est-stat-val" style="font-size:0.85rem;">${formatarMoeda(e.receita_mes)}</div>
-              <div class="est-stat-lbl">Este mês</div>
-            </div>` : ''}
-          </div>` : ''}
+          <!-- Corpo do accordion (oculto por padrão) -->
+          <div class="est-accordion-body" id="acc-body-${e.id}">
+            <div style="padding-top:12px;">
 
-          <!-- Links -->
-          <div class="est-links">
-            <div class="link-box" onclick="copiar('${e.link_dashboard}', 'Link do painel copiado!')">
-              <div style="flex:1;min-width:0;">
-                <span class="link-label">Painel do Responsável</span>
-                <span class="link-url">${e.link_dashboard}</span>
+              <!-- Detalhes -->
+              <div class="est-details">
+                <div class="est-detail-row">
+                  <span class="icon">📱</span>
+                  <strong>${e.telefone || '–'}</strong>
+                  ${e.email ? `<span style="color:var(--text3)">·</span><span>${e.email}</span>` : ''}
+                </div>
+                <div class="est-detail-row">
+                  <span class="icon">🕐</span>
+                  <strong>${hAb.toString().padStart(2,'0')}:${mAb.toString().padStart(2,'0')} – ${hFe.toString().padStart(2,'0')}:${mFe.toString().padStart(2,'0')}</strong>
+                </div>
+                ${e.endereco ? `<div class="est-detail-row"><span class="icon">📍</span><span>${e.endereco}</span></div>` : ''}
+                <div class="est-detail-row">
+                  <span class="icon">💠</span>
+                  <span>Pix: <strong>${chavePix}</strong></span>
+                </div>
+                ${dataFormatada ? `<div class="est-detail-row"><span class="icon">📅</span><span>Cadastrado em <strong>${dataFormatada}</strong></span></div>` : ''}
               </div>
-              <button class="copy-btn">📋</button>
-            </div>
-            <div class="link-box" onclick="copiar('${e.link_booking}', 'Link de agendamento copiado!')">
-              <div style="flex:1;min-width:0;">
-                <span class="link-label">Link de Agendamento</span>
-                <span class="link-url">${e.link_booking}</span>
-              </div>
-              <button class="copy-btn">📋</button>
-            </div>
-          </div>
 
-          <!-- Ações -->
-          <div class="est-actions">
-            <button class="btn btn-ghost btn-sm" onclick="compartilhar('${e.link_booking}', '${e.nome}')">
-              🔗 Compartilhar
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="abrirPainel('${e.link_dashboard}')">
-              📊 Painel
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="deletarEst('${e.id}')">✕ Excluir</button>
+              <!-- Links -->
+              <div class="est-links">
+                <div class="link-box" onclick="copiar('${e.link_dashboard}','Link do painel copiado!')">
+                  <div style="flex:1;min-width:0;">
+                    <span class="link-label">Painel do Responsável</span>
+                    <span class="link-url">${e.link_dashboard}</span>
+                  </div>
+                  <button class="copy-btn">📋</button>
+                </div>
+                <div class="link-box" onclick="copiar('${e.link_booking}','Link de agendamento copiado!')">
+                  <div style="flex:1;min-width:0;">
+                    <span class="link-label">Link de Agendamento</span>
+                    <span class="link-url">${e.link_booking}</span>
+                  </div>
+                  <button class="copy-btn">📋</button>
+                </div>
+              </div>
+
+              <!-- Ações -->
+              <div class="est-actions">
+                <button class="btn btn-ghost btn-sm" onclick="compartilhar('${e.link_booking}','${e.nome}')">🔗 Compartilhar</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.open('${e.link_dashboard}','_blank')">📊 Painel</button>
+                <button class="btn btn-danger btn-sm" onclick="deletarEst('${e.id}')">✕ Excluir</button>
+              </div>
+            </div>
           </div>
         </div>`;
       }).join('');
     }
 
-    // ── COPIAR ─────────────────────────────────────────────
-    function copiar(texto, msg) {
-      navigator.clipboard.writeText(texto).then(() => mostrarToast(msg, 'sucesso'));
+    // ── Accordion ──────────────────────────────────────
+    function toggleAccordion(id) {
+      const btn  = document.getElementById('acc-btn-' + id);
+      const body = document.getElementById('acc-body-' + id);
+      const aberto = body.classList.toggle('open');
+      btn.classList.toggle('open', aberto);
+      btn.querySelector('span:first-child').textContent = aberto ? 'Ocultar detalhes' : 'Ver mais detalhes';
     }
 
-    // ── COMPARTILHAR ───────────────────────────────────────
-    function compartilhar(url, nome) {
-      if (navigator.share) {
-        navigator.share({ title: 'Agende no ' + nome, url });
-      } else {
-        copiar(url, 'Link copiado!');
-      }
+    // ── Pesquisa ────────────────────────────────────────
+    const searchInput = document.getElementById('search-input');
+    const searchClear = document.getElementById('search-clear');
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      searchClear.classList.toggle('show', q.length > 0);
+      if (!q) { renderLista(todosEstabelecimentos); return; }
+      const filtrados = todosEstabelecimentos.filter(e =>
+        (e.nome         || '').toLowerCase().includes(q) ||
+        (e.responsavel  || '').toLowerCase().includes(q) ||
+        (e.telefone     || '').toLowerCase().includes(q) ||
+        (e.email        || '').toLowerCase().includes(q) ||
+        (e.endereco     || '').toLowerCase().includes(q)
+      );
+      renderLista(filtrados);
+    });
+
+    searchClear.onclick = () => {
+      searchInput.value = '';
+      searchClear.classList.remove('show');
+      renderLista(todosEstabelecimentos);
+      searchInput.focus();
+    };
+
+    // ════════════════════════════════════════════════════
+    // PLANILHA
+    // ════════════════════════════════════════════════════
+    function carregarSheetUrl() {
+      const url = localStorage.getItem('cj_sheet_url') || '';
+      document.getElementById('sheet-url-input').value = url;
+      atualizarSheetPreview(url);
     }
 
-    // ── ABRIR PAINEL ────────────────────────────────────────
-    function abrirPainel(url) {
+    function salvarSheetUrl() {
+      const url = document.getElementById('sheet-url-input').value.trim();
+      if (!url) { mostrarToast('Cole a URL da planilha', 'erro'); return; }
+      localStorage.setItem('cj_sheet_url', url);
+      atualizarSheetPreview(url);
+      mostrarToast('URL salva!', 'sucesso');
+    }
+
+    function atualizarSheetPreview(url) {
+      const placeholder = document.getElementById('sheet-placeholder');
+      const wrap        = document.getElementById('sheet-iframe-wrap');
+      const iframe      = document.getElementById('sheet-iframe');
+      if (!url) { placeholder.style.display = 'flex'; wrap.style.display = 'none'; return; }
+      // Converte URL de edição para URL de embed
+      let embedUrl = url;
+      if (url.includes('/edit')) embedUrl = url.replace('/edit', '/preview');
+      else if (!url.includes('/preview') && !url.includes('/embed')) embedUrl = url + (url.includes('?') ? '&' : '?') + 'embedded=true';
+      iframe.src = embedUrl;
+      placeholder.style.display = 'none';
+      wrap.style.display = 'block';
+    }
+
+    function abrirSheet() {
+      const url = localStorage.getItem('cj_sheet_url');
+      if (!url) { mostrarToast('Nenhuma URL salva', 'erro'); return; }
       window.open(url, '_blank');
     }
 
-    // ── MODAL ──────────────────────────────────────────────
-    document.getElementById('btn-novo').onclick = () => {
-      document.getElementById('modal-novo').classList.add('open');
-    };
-    document.getElementById('btn-cancelar-modal').onclick = () => {
-      document.getElementById('modal-novo').classList.remove('open');
-    };
-    document.getElementById('modal-novo').addEventListener('click', e => {
-      if (e.target === document.getElementById('modal-novo'))
-        document.getElementById('modal-novo').classList.remove('open');
-    });
+    function copiarSheetUrl() {
+      const url = localStorage.getItem('cj_sheet_url');
+      if (!url) { mostrarToast('Nenhuma URL salva', 'erro'); return; }
+      navigator.clipboard.writeText(url).then(() => mostrarToast('Link copiado!', 'sucesso'));
+    }
 
-    // ── SALVAR ─────────────────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // CONFIG — salva URL da API e Pix no localStorage
+    // ════════════════════════════════════════════════════
+    function carregarConfigInputs() {
+      document.getElementById('config-api-url').value = localStorage.getItem('cj_api_url') || CONFIG.API_URL || '';
+      document.getElementById('config-pix').value     = localStorage.getItem('cj_pix_padrao') || CONFIG.CHAVE_PIX_PADRAO || '';
+    }
+
+    function salvarApiUrl() {
+      const url = document.getElementById('config-api-url').value.trim();
+      if (!url) { mostrarToast('Cole a URL da API', 'erro'); return; }
+      localStorage.setItem('cj_api_url', url);
+      mostrarToast('URL da API salva! Recarregue para aplicar.', 'sucesso');
+    }
+
+    function salvarPixPadrao() {
+      const pix = document.getElementById('config-pix').value.trim();
+      if (!pix) { mostrarToast('Informe a chave Pix', 'erro'); return; }
+      localStorage.setItem('cj_pix_padrao', pix);
+      mostrarToast('Chave Pix padrão salva!', 'sucesso');
+    }
+
+    // ════════════════════════════════════════════════════
+    // MODAL
+    // ════════════════════════════════════════════════════
+    document.getElementById('btn-novo').onclick  = () => document.getElementById('modal-novo').classList.add('open');
+    function fecharModal() { document.getElementById('modal-novo').classList.remove('open'); }
+    document.getElementById('modal-novo').addEventListener('click', e => { if (e.target === document.getElementById('modal-novo')) fecharModal(); });
+
     document.getElementById('btn-salvar-est').onclick = async () => {
       const nome = document.getElementById('f-nome').value.trim();
       const resp = document.getElementById('f-resp').value.trim();
       const tel  = document.getElementById('f-tel').value.trim();
       if (!nome || !resp || !tel) { mostrarToast('Preencha os campos obrigatórios', 'erro'); return; }
-
       mostrarLoading(true);
       const res = await api({
-        action: 'salvarEstabelecimento',
-        nome, responsavel: resp, telefone: tel,
-        email: document.getElementById('f-email').value.trim(),
-        endereco: document.getElementById('f-end').value.trim(),
-        horario_abertura: document.getElementById('f-abre').value,
+        action: 'salvarEstabelecimento', nome, responsavel: resp, telefone: tel,
+        email:              document.getElementById('f-email').value.trim(),
+        endereco:           document.getElementById('f-end').value.trim(),
+        horario_abertura:   document.getElementById('f-abre').value,
         horario_fechamento: document.getElementById('f-fecha').value,
-        chave_pix: document.getElementById('f-pix').value.trim() || CONFIG.CHAVE_PIX_PADRAO,
+        chave_pix:          document.getElementById('f-pix').value.trim() || CONFIG.CHAVE_PIX_PADRAO,
       });
       mostrarLoading(false);
-
       if (res.sucesso) {
-        mostrarToast('Salão cadastrado com sucesso!', 'sucesso');
-        document.getElementById('modal-novo').classList.remove('open');
+        mostrarToast('Salão cadastrado!', 'sucesso');
+        fecharModal();
         ['f-nome','f-resp','f-tel','f-email','f-end','f-pix'].forEach(id => document.getElementById(id).value = '');
         carregarEstabelecimentos();
-      } else {
-        mostrarToast(res.erro || 'Erro ao salvar', 'erro');
-      }
+      } else mostrarToast(res.erro || 'Erro ao salvar', 'erro');
     };
 
-    // ── DELETAR ────────────────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // AÇÕES
+    // ════════════════════════════════════════════════════
+    function copiar(texto, msg) { navigator.clipboard.writeText(texto).then(() => mostrarToast(msg, 'sucesso')); }
+    function compartilhar(url, nome) {
+      if (navigator.share) navigator.share({ title: 'Agende no ' + nome, url });
+      else copiar(url, 'Link copiado!');
+    }
     async function deletarEst(id) {
       if (!confirm('Tem certeza que deseja excluir este salão?')) return;
       mostrarLoading(true);
