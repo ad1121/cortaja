@@ -320,6 +320,18 @@
               <div class="font-opt-name">Inter</div>
               <div class="font-opt-preview" style="font-family:'Inter',sans-serif;">Estilo Minimalista — Neutro</div>
             </div>
+            <div class="font-opt" data-font="dancing" data-url="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
+              <div class="font-opt-name">Dancing Script ✍️</div>
+              <div class="font-opt-preview" style="font-family:'Dancing Script',cursive;font-size:1.15rem;">Cursiva Elegante — Estilo Salão</div>
+            </div>
+            <div class="font-opt" data-font="greatvibes" data-url="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+              <div class="font-opt-name">Great Vibes ✍️</div>
+              <div class="font-opt-preview" style="font-family:'Great Vibes',cursive;font-size:1.3rem;">Manuscrita Refinada</div>
+            </div>
+            <div class="font-opt" data-font="pacifico" data-url="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
+              <div class="font-opt-name">Pacifico ✍️</div>
+              <div class="font-opt-preview" style="font-family:'Pacifico',cursive;font-size:1rem;">Cursiva Retrô Barbershop</div>
+            </div>
           </div>
         </div>
 
@@ -418,7 +430,7 @@
           document.querySelectorAll('.font-opt').forEach(o => o.classList.remove('active'));
           opt.classList.add('active');
           if (opt.dataset.url) { const l = document.createElement('link'); l.rel='stylesheet'; l.href=opt.dataset.url; document.head.appendChild(l); }
-          const fm = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif" };
+          const fm = { playfair:"'Playfair Display',serif", cormorant:"'Cormorant Garamond',serif", montserrat:"'Montserrat',sans-serif", oswald:"'Oswald',sans-serif", inter:"'Inter',sans-serif", dancing:"'Dancing Script',cursive", greatvibes:"'Great Vibes',cursive", pacifico:"'Pacifico',cursive" };
           if (fm[t.font]) root.style.setProperty('--font-title', fm[t.font]);
         }
       }
