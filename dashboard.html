@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <title>CortaJá — Painel</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link id="font-link" rel="stylesheet" href="">
+  <style>
+    /* ── Modo Claro ─────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg:    #F5F3EF;
+      --bg2:   #EDEAE4;
+      --bg3:   #E4E0D8;
+      --bg4:   #D8D3C8;
+      --text:  #1A1814;
+      --text2: #6B6560;
+      --text3: #9A9590;
+    }
+    [data-theme="light"] .header { background: rgba(245,243,239,0.92); }
+    [data-theme="light"] .card   { background: #fff; border-color: rgba(0,0,0,0.07); }
+
+    /* ── Tabs ──────────────────────────────────────────── */
+    .tab-bar { display:flex; gap:6px; padding:16px 20px 0; overflow-x:auto; scrollbar-width:none; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab { padding:10px 18px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.08); background:var(--bg2); color:var(--text2); font-size:0.82rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:all var(--transition); font-family:var(--font-body); }
+    .tab.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+    [data-theme="light"] .tab { border-color:rgba(0,0,0,0.1); }
+
+    /* ── Cards profissional / serviço ──────────────────── */
+    .prof-card { display:flex; align-items:flex-start; gap:14px; }
+    .prof-info { flex:1; }
+    .prof-nome { font-weight:600; font-size:0.95rem; }
+    .prof-esp  { font-size:0.8rem; color:var(--text2); margin-top:2px; }
+    .prof-details { display:flex; flex-direction:column; gap:4px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); }
+    .prof-detail-row { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--text2); }
+    .prof-detail-row span { color:var(--text1); }
+    .prof-ag-badge { display:inline-flex; align-items:center; gap:4px; background:var(--gold-dim); border:1px solid rgba(201,168,76,0.3); color:var(--gold); border-radius:99px; padding:2px 10px; font-size:0.73rem; font-weight:600; margin-top:6px; }
+    .serv-card { display:flex; align-items:center; justify-content:space-between; }
+    .serv-nome { font-weight:600; font-size:0.95rem; }
+    .serv-dur  { font-size:0.78rem; color:var(--text2); margin-top:2px; }
+    .serv-preco { font-family:var(--font-title); font-weight:700; color:var(--gold); font-size:1rem; }
+
+    /* ── Cards agendamento ─────────────────────────────── */
+    .ag-card { display:flex; flex-direction:column; gap:8px; }
+    .ag-header { display:flex; align-items:center; justify-content:space-between; }
+    .ag-hora { font-family:var(--font-title); font-size:1.2rem; font-weight:700; }
+    .ag-info-row { display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text2); }
+    .ag-info-row strong { color:var(--text); font-weight:500; }
+    .ag-divider { height:1px; background:rgba(255,255,255,0.05); margin:4px 0; }
+    .pix-inline { display:inline-flex; align-items:center; gap:5px; background:rgba(0,180,120,0.08); border:1px solid rgba(0,180,120,0.2); color:#4ecb9e; border-radius:8px; padding:3px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; }
+
+    /* ── Skeleton ──────────────────────────────────────── */
+    .skeleton { background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:var(--radius-sm); }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-card { height:90px; margin-bottom:10px; border-radius:var(--radius-md); }
+    .sk-card-tall { height:140px; margin-bottom:10px; border-radius:var(--radius-md); }
+
+    /* ── Resumo do dia ─────────────────────────────────── */
+    .resumo-dia { display:flex; gap:10px; margin-bottom:16px; }
+    .resumo-stat { flex:1; background:var(--bg2); border-radius:var(--radius-md); padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
+    .resumo-stat-val { font-family:var(--font-title); font-size:1.4rem; font-weight:700; color:var(--gold); }
+    .resumo-stat-lbl { font-size:0.72rem; color:var(--text2); margin-top:2px; }
+
+    /* ── Seletor de dias da semana ──────────────────── */
+    .dias-grid { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .dia-btn {
+      width:40px; height:40px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.08);
+      background:var(--bg3); color:var(--text2);
+      font-size:0.72rem; font-weight:600; cursor:pointer;
+      transition:all var(--transition); font-family:var(--font-body);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .dia-btn.ativo {
+      background:var(--gold-dim); border-color:var(--gold);
+      color:var(--gold);
+    }
+    .horario-por-dia { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .horario-dia-row { display:flex; align-items:center; gap:10px; }
+    .horario-dia-label { font-size:0.8rem; color:var(--text2); width:36px; flex-shrink:0; }
+    .horario-dia-inputs { display:flex; align-items:center; gap:6px; flex:1; }
+    .horario-dia-inputs input { flex:1; padding:8px 10px; font-size:0.82rem; }
+    .horario-dia-sep { font-size:0.75rem; color:var(--text3); }
+
+    /* ── Personalização (Config) ───────────────────────── */
+    .theme-section-title { font-size:0.78rem; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin:20px 0 10px; }
+    .color-swatches { display:flex; gap:10px; flex-wrap:wrap; }
+    .swatch { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all 0.2s; flex-shrink:0; }
+    .swatch.active { border-color:var(--text); transform:scale(1.15); }
+    .font-options { display:flex; flex-direction:column; gap:8px; }
+    .font-opt { padding:12px 16px; border-radius:var(--radius-md); background:var(--bg3); border:2px solid transparent; cursor:pointer; transition:all 0.2s; }
+    .font-opt.active { border-color:var(--gold); background:var(--gold-dim); }
+    .font-opt-name { font-size:0.85rem; font-weight:600; }
+    .font-opt-preview { font-size:1rem; color:var(--text2); margin-top:2px; }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .toggle-label { font-size:0.9rem; font-weight:500; }
+    .toggle-sub { font-size:0.75rem; color:var(--text2); margin-top:2px; }
+    .toggle { position:relative; width:48px; height:26px; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:var(--bg4); border-radius:99px; cursor:pointer; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; width:20px; height:20px; border-radius:50%; background:#fff; left:3px; top:3px; transition:0.3s; }
+    .toggle input:checked + .toggle-slider { background:var(--gold); }
+    .toggle input:checked + .toggle-slider::before { transform:translateX(22px); }
+
+    /* ── Histórico agendamentos (portal cliente) ───────── */
+    .hist-card { display:flex; flex-direction:column; gap:6px; }
+    .hist-data { font-size:0.78rem; color:var(--text2); }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" style="display:none;"><div class="spinner"></div></div>
+
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo" id="hdr-logo">Corta<span>Já</span></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="salao-nome" style="font-size:0.82rem;color:var(--text2);">Carregando...</div>
+          <button id="btn-toggle-theme" title="Alternar modo claro/escuro" style="background:none;border:none;cursor:pointer;font-size:1.2rem;padding:4px;">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="tab-bar">
+      <button class="tab active" data-tab="agenda">📅 Agenda</button>
+      <button class="tab" data-tab="cabeleireiros">✂️ Profissionais</button>
+      <button class="tab" data-tab="servicos">💈 Serviços</button>
+      <button class="tab" data-tab="produtos">🧴 Produtos</button>
+      <button class="tab" data-tab="config">⚙️ Config</button>
+    </div>
+
+    <!-- ── AGENDA ──────────────────────────────────────── -->
+    <div id="tab-agenda" class="section">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <input type="date" class="input" id="data-agenda" style="flex:1;">
+        <button class="btn btn-ghost btn-sm" id="btn-atualizar" title="Atualizar">🔄</button>
+      </div>
+      <div class="resumo-dia" id="resumo-dia" style="display:none;">
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-total">0</div>
+          <div class="resumo-stat-lbl">Total</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-confirmados" style="color:var(--green);">0</div>
+          <div class="resumo-stat-lbl">Confirmados</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-val" id="rstat-aguardando" style="color:var(--gold);">0</div>
+          <div class="resumo-stat-lbl">Aguard. Pix</div>
+        </div>
+      </div>
+      <div class="stack" id="lista-agendamentos">
+        <div class="skeleton sk-card-tall"></div>
+        <div class="skeleton sk-card-tall"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    </div>
+
+    <!-- ── PROFISSIONAIS ───────────────────────────────── -->
+    <div id="tab-cabeleireiros" class="section" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="section-title" style="margin:0">Profissionais</div>
+        <button class="btn btn-primary btn-sm" id="btn-novo-prof">+ Novo</button>
+      </div>
+      <div class="stack" id="lista-prof">
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    </div>
+
+    <!-- ── SERVIÇOS ────────────────────────────────────── -->
+    <div id="tab-servicos" class="section" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="section-title" style="margin:0">Serviços</div>
+        <button class="btn btn-primary btn-sm" id="btn-novo-serv">+ Novo</button>
+      </div>
+      <div class="stack" id="lista-serv">
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUTOS ────────────────────────────────────── -->
+    <div id="tab-produtos" class="section" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="section-title" style="margin:0">Produtos</div>
+        <button class="btn btn-primary btn-sm" id="btn-novo-prod">+ Novo</button>
+      </div>
+      <div class="stack" id="lista-prod">
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    </div>
+
+    <!-- ── CONFIG ──────────────────────────────────────── -->
+    <div id="tab-config" class="section" style="display:none;">
+
+      <!-- Link de agendamento -->
+      <div class="section-title">Configurações do Salão</div>
+      <div class="card" style="margin-bottom:16px;">
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;">Link de agendamento:</p>
+        <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:10px;">
+          <div id="link-booking-url" style="font-size:0.82rem;color:var(--gold);flex:1;word-break:break-all;"></div>
+          <button onclick="copiarLink()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1rem;">📋</button>
+        </div>
+        <button class="btn btn-outline btn-full" style="margin-top:12px;" onclick="compartilharLink()">Compartilhar Link</button>
+      </div>
+
+
+      <!-- Dias da semana e horários -->
+      <div class="card" style="margin-bottom:16px;" id="card-dias-semana">
+        <div class="theme-section-title" style="margin-top:0;">Dias de Funcionamento</div>
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;">Selecione os dias em que o salão atende.</p>
+        <div class="dias-grid" id="dias-grid">
+          <button class="dia-btn" data-dia="0" onclick="toggleDia(this)">Dom</button>
+          <button class="dia-btn ativo" data-dia="1" onclick="toggleDia(this)">Seg</button>
+          <button class="dia-btn ativo" data-dia="2" onclick="toggleDia(this)">Ter</button>
+          <button class="dia-btn ativo" data-dia="3" onclick="toggleDia(this)">Qua</button>
+          <button class="dia-btn ativo" data-dia="4" onclick="toggleDia(this)">Qui</button>
+          <button class="dia-btn ativo" data-dia="5" onclick="toggleDia(this)">Sex</button>
+          <button class="dia-btn" data-dia="6" onclick="toggleDia(this)">Sáb</button>
+        </div>
+
+        <div style="margin-top:16px;">
+          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:8px;">Horário de cada dia (deixe em branco para usar o padrão):</p>
+          <div class="horario-por-dia" id="horario-por-dia">
+            <!-- preenchido por JS -->
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="btn btn-ghost btn-sm" onclick="selecionarTodosDias()">Todos os dias</button>
+          <button class="btn btn-ghost btn-sm" onclick="selecionarDiasUteis()">Seg–Sex</button>
+          <button class="btn btn-ghost btn-sm" onclick="selecionarFimSemana()">Sáb–Dom</button>
+        </div>
+
+        <button class="btn btn-primary btn-full" style="margin-top:14px;" onclick="salvarDiasSemana()">
+          💾 Salvar Dias e Horários
+        </button>
+      </div>
+
+      <!-- Modo escuro/claro -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="toggle-row" style="border:none;padding:0;">
+          <div>
+            <div class="toggle-label">☀️ Modo Claro</div>
+            <div class="toggle-sub">Alterna entre tema escuro e claro</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-light-mode">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Cor de destaque -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="theme-section-title">Cor de Destaque</div>
+        <div class="color-swatches" id="color-swatches">
+          <div class="swatch active" data-color="#C9A84C" style="background:#C9A84C;" title="Dourado"></div>
+          <div class="swatch" data-color="#7C4DFF" style="background:#7C4DFF;" title="Roxo"></div>
+          <div class="swatch" data-color="#00BCD4" style="background:#00BCD4;" title="Ciano"></div>
+          <div class="swatch" data-color="#FF5252" style="background:#FF5252;" title="Vermelho"></div>
+          <div class="swatch" data-color="#52C07A" style="background:#52C07A;" title="Verde"></div>
+          <div class="swatch" data-color="#FF9800" style="background:#FF9800;" title="Laranja"></div>
+          <div class="swatch" data-color="#E91E8C" style="background:#E91E8C;" title="Rosa"></div>
+          <div class="swatch" data-color="#90A4AE" style="background:#90A4AE;" title="Cinza Azulado"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:14px;">
+          <label style="font-size:0.82rem;color:var(--text2);">Cor personalizada:</label>
+          <input type="color" id="custom-color" value="#C9A84C" style="width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:50%;overflow:hidden;">
+        </div>
+      </div>
+
+      <!-- Fonte -->
+      <div class="card">
+        <div class="theme-section-title">Fonte do Sistema</div>
+        <div class="font-options" id="font-options">
+          <div class="font-opt active" data-font="playfair" data-url="">
+            <div class="font-opt-name">Playfair Display</div>
+            <div class="font-opt-preview" style="font-family:'Playfair Display',serif;">Estilo Clássico — Barbearia Premium</div>
+          </div>
+          <div class="font-opt" data-font="cormorant" data-url="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap">
+            <div class="font-opt-name">Cormorant Garamond</div>
+            <div class="font-opt-preview" style="font-family:'Cormorant Garamond',serif;">Estilo Editorial — Elegante</div>
+          </div>
+          <div class="font-opt" data-font="montserrat" data-url="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap">
+            <div class="font-opt-name">Montserrat</div>
+            <div class="font-opt-preview" style="font-family:'Montserrat',sans-serif;">Estilo Moderno — Clean</div>
+          </div>
+          <div class="font-opt" data-font="oswald" data-url="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap">
+            <div class="font-opt-name">Oswald</div>
+            <div class="font-opt-preview" style="font-family:'Oswald',sans-serif;">Estilo Barbershop — Forte</div>
+          </div>
+          <div class="font-opt" data-font="inter" data-url="">
+            <div class="font-opt-name">Inter</div>
+            <div class="font-opt-preview" style="font-family:'Inter',sans-serif;">Estilo Minimalista — Neutro</div>
+          </div>
+          <div class="font-opt" data-font="dancing" data-url="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
+            <div class="font-opt-name">Dancing Script ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Dancing Script',cursive;font-size:1.15rem;">Cursiva Elegante — Estilo Salão</div>
+          </div>
+          <div class="font-opt" data-font="greatvibes" data-url="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+            <div class="font-opt-name">Great Vibes ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Great Vibes',cursive;font-size:1.3rem;">Manuscrita Refinada</div>
+          </div>
+          <div class="font-opt" data-font="pacifico" data-url="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
+            <div class="font-opt-name">Pacifico ✍️</div>
+            <div class="font-opt-preview" style="font-family:'Pacifico',cursive;font-size:1rem;">Cursiva Retrô Barbershop</div>
+          </div>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text3);margin-top:12px;">A fonte e cor são aplicadas também na página de agendamento do cliente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Novo Profissional ───────────────────────── -->
+  <div class="modal-overlay" id="modal-prof">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title">Novo Profissional</h3>
+      <div class="stack">
+        <div class="input-group"><label class="input-label">Nome *</label><input class="input" id="fp-nome" placeholder="Nome do profissional" type="text"></div>
+        <div class="input-group"><label class="input-label">Especialidades</label><input class="input" id="fp-esp" placeholder="Ex: Degradê, Barba, Navalhado" type="text"></div>
+        <div class="input-group"><label class="input-label">E-mail</label><input class="input" id="fp-email" placeholder="email@exemplo.com" type="email"></div>
+        <div class="input-group"><label class="input-label">Telefone / WhatsApp</label><input class="input" id="fp-telefone" placeholder="(61) 99999-9999" type="tel"></div>
+        <div class="grid-2">
+          <div class="input-group"><label class="input-label">Entrada</label><input class="input" id="fp-entrada" placeholder="08:00" type="time"></div>
+          <div class="input-group"><label class="input-label">Saída</label><input class="input" id="fp-saida" placeholder="18:00" type="time"></div>
+        </div>
+        <div class="input-group"><label class="input-label">Chave Pix</label><input class="input" id="fp-pix" placeholder="CPF, e-mail ou telefone" type="text"></div>
+        <div class="input-group"><label class="input-label">Foto (URL)</label><input class="input" id="fp-foto" placeholder="https://..." type="url"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-prof')">Cancelar</button>
+          <button class="btn btn-primary btn-full" id="btn-salvar-prof">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Novo Serviço ────────────────────────────── -->
+  <div class="modal-overlay" id="modal-serv">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title">Novo Serviço</h3>
+      <div class="stack">
+        <div class="input-group"><label class="input-label">Nome do Serviço *</label><input class="input" id="fs-nome" placeholder="Ex: Corte Degradê" type="text"></div>
+        <div class="grid-2">
+          <div class="input-group"><label class="input-label">Preço (R$)</label><input class="input" id="fs-preco" placeholder="0,00" type="number" step="0.01" min="0"></div>
+          <div class="input-group"><label class="input-label">Duração (min)</label><input class="input" id="fs-dur" placeholder="30" type="number" min="15" step="15"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-serv')">Cancelar</button>
+          <button class="btn btn-primary btn-full" id="btn-salvar-serv">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Novo Produto ────────────────────────────── -->
+  <div class="modal-overlay" id="modal-prod">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title">Novo Produto</h3>
+      <div class="stack">
+        <div class="input-group"><label class="input-label">Nome *</label><input class="input" id="fpd-nome" placeholder="Ex: Pomada Modeladora" type="text"></div>
+        <div class="input-group"><label class="input-label">Descrição</label><input class="input" id="fpd-desc" placeholder="Breve descrição" type="text"></div>
+        <div class="input-group"><label class="input-label">Preço (R$)</label><input class="input" id="fpd-preco" placeholder="0,00" type="number" step="0.01" min="0"></div>
+        <div class="input-group"><label class="input-label">Foto (URL)</label><input class="input" id="fpd-foto" placeholder="https://..." type="url"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-ghost btn-full" onclick="fecharModal('modal-prod')">Cancelar</button>
+          <button class="btn btn-primary btn-full" id="btn-salvar-prod">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+
+    const params   = new URLSearchParams(location.search);
+    const SALON_ID = params.get('id');
+    if (!SALON_ID) {
+      document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;"><h2 style="color:var(--gold)">Link inválido</h2><p style="margin-top:8px;">Este link não possui um ID de salão válido.</p></div>';
+    }
+
+    const cache = { prof: null, serv: null, prod: null };
+
+    // ════════════════════════════════════════════════════
+    // TEMA — cor, fonte, modo claro/escuro
+    // Salvo em localStorage com prefixo do salão para
+    // que cada estabelecimento tenha suas próprias prefs.
+    // ════════════════════════════════════════════════════
+    const THEME_KEY = 'cj_theme_' + SALON_ID;
+
+    function lerTema() {
+      try { return JSON.parse(localStorage.getItem(THEME_KEY)) || {}; } catch(_) { return {}; }
+    }
+    function salvarTema(obj) {
+      const atual = lerTema();
+      try { localStorage.setItem(THEME_KEY, JSON.stringify({ ...atual, ...obj })); } catch(_) {}
+      // Replica para o booking (mesma chave lida pelo booking.html)
+      try { localStorage.setItem('cj_theme_booking_' + SALON_ID, JSON.stringify({ ...atual, ...obj })); } catch(_) {}
+    }
+
+    function aplicarTema(tema) {
+      const root = document.documentElement;
+
+      // Modo claro/escuro
+      root.setAttribute('data-theme', tema.mode === 'light' ? 'light' : 'dark');
+      const btn = document.getElementById('btn-toggle-theme');
+      if (btn) btn.textContent = tema.mode === 'light' ? '🌙' : '☀️';
+      const toggleEl = document.getElementById('toggle-light-mode');
+      if (toggleEl) toggleEl.checked = tema.mode === 'light';
+
+      // Cor de destaque
+      if (tema.color) {
+        root.style.setProperty('--gold', tema.color);
+        // recalcula gold-dim
+        root.style.setProperty('--gold-dim', tema.color + '26');
+        root.style.setProperty('--gold-light', tema.color);
+        document.querySelectorAll('.swatch').forEach(s => {
+          s.classList.toggle('active', s.dataset.color === tema.color);
+        });
+        const cc = document.getElementById('custom-color');
+        if (cc) cc.value = tema.color;
+      }
+
+      // Fonte
+      if (tema.font) {
+        const opt = document.querySelector(`.font-opt[data-font="${tema.font}"]`);
+        if (opt) {
+          document.querySelectorAll('.font-opt').forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          const url = opt.dataset.url;
+          const link = document.getElementById('font-link');
+          if (url) link.href = url;
+          const fontMap = {
+            playfair:   "'Playfair Display', serif",
+            cormorant:  "'Cormorant Garamond', serif",
+            montserrat: "'Montserrat', sans-serif",
+            oswald:     "'Oswald', sans-serif",
+            inter:      "'Inter', sans-serif",
+            dancing:    "'Dancing Script', cursive",
+            greatvibes: "'Great Vibes', cursive",
+            pacifico:   "'Pacifico', cursive",
+          };
+          if (fontMap[tema.font]) root.style.setProperty('--font-title', fontMap[tema.font]);
+        }
+      }
+    }
+
+    // ── Aplicar tema salvo ao carregar ──────────────────
+    aplicarTema(lerTema());
+
+    // ── Toggle claro/escuro (header) ────────────────────
+    document.getElementById('btn-toggle-theme').onclick = () => {
+      const atual = lerTema();
+      const novoMode = atual.mode === 'light' ? 'dark' : 'light';
+      salvarTema({ mode: novoMode });
+      aplicarTema({ ...atual, mode: novoMode });
+    };
+
+    // ── Toggle modo claro (config) ──────────────────────
+    document.getElementById('toggle-light-mode').onchange = function() {
+      const novoMode = this.checked ? 'light' : 'dark';
+      salvarTema({ mode: novoMode });
+      aplicarTema({ ...lerTema(), mode: novoMode });
+      const btn = document.getElementById('btn-toggle-theme');
+      if (btn) btn.textContent = novoMode === 'light' ? '🌙' : '☀️';
+    };
+
+    // ── Swatches de cor ─────────────────────────────────
+    document.querySelectorAll('.swatch').forEach(s => {
+      s.onclick = () => {
+        salvarTema({ color: s.dataset.color });
+        aplicarTema({ ...lerTema(), color: s.dataset.color });
+      };
+    });
+    document.getElementById('custom-color').oninput = function() {
+      salvarTema({ color: this.value });
+      aplicarTema({ ...lerTema(), color: this.value });
+    };
+
+    // ── Seleção de fonte ────────────────────────────────
+    document.querySelectorAll('.font-opt').forEach(opt => {
+      opt.onclick = () => {
+        salvarTema({ font: opt.dataset.font });
+        aplicarTema({ ...lerTema(), font: opt.dataset.font });
+      };
+    });
+
+    // ════════════════════════════════════════════════════
+    // TABS
+    // ════════════════════════════════════════════════════
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('[id^="tab-"]').forEach(s => s.style.display = 'none');
+        document.getElementById('tab-' + tab.dataset.tab).style.display = '';
+        if (tab.dataset.tab === 'cabeleireiros') carregarProf();
+        if (tab.dataset.tab === 'servicos') carregarServ();
+        if (tab.dataset.tab === 'produtos') carregarProd();
+        if (tab.dataset.tab === 'agenda') carregarAgenda();
+        if (tab.dataset.tab === 'config') carregarConfigDias();
+      };
+    });
+
+    function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
+    function skeletons(cid, tall = false) {
+      const cls = tall ? 'sk-card-tall' : 'sk-card';
+      document.getElementById(cid).innerHTML =
+        `<div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div><div class="skeleton ${cls}"></div>`;
+    }
+
+
+    // ════════════════════════════════════════════════════
+    // DIAS DA SEMANA
+    // ════════════════════════════════════════════════════
+    const NOMES_DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+    function toggleDia(btn) {
+      btn.classList.toggle('ativo');
+      atualizarHorariosPorDia();
+    }
+
+    function getDiasSelecionados() {
+      return [...document.querySelectorAll('.dia-btn.ativo')].map(b => parseInt(b.dataset.dia));
+    }
+
+    function selecionarTodosDias() {
+      document.querySelectorAll('.dia-btn').forEach(b => b.classList.add('ativo'));
+      atualizarHorariosPorDia();
+    }
+    function selecionarDiasUteis() {
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', [1,2,3,4,5].includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+    }
+    function selecionarFimSemana() {
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', [0,6].includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+    }
+
+    function atualizarHorariosPorDia() {
+      const container = document.getElementById('horario-por-dia');
+      const dias = getDiasSelecionados();
+      // Preserva valores já digitados
+      const valoresAtuais = {};
+      container.querySelectorAll('.horario-dia-row').forEach(row => {
+        const dia = row.dataset.dia;
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length === 2) valoresAtuais[dia] = { ab: inputs[0].value, fe: inputs[1].value };
+      });
+      if (!dias.length) {
+        container.innerHTML = '<p style="font-size:0.82rem;color:var(--text3);">Nenhum dia selecionado</p>';
+        return;
+      }
+      container.innerHTML = dias.map(d => {
+        const prev = valoresAtuais[d] || {};
+        return `
+          <div class="horario-dia-row" data-dia="${d}">
+            <span class="horario-dia-label">${NOMES_DIAS[d]}</span>
+            <div class="horario-dia-inputs">
+              <input class="input" type="time" value="${prev.ab || ''}" placeholder="Abertura">
+              <span class="horario-dia-sep">–</span>
+              <input class="input" type="time" value="${prev.fe || ''}" placeholder="Fechamento">
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function carregarDiasSemana(diasSalvos, horariosPorDia) {
+      // diasSalvos: array de números [0,1,2,3,4,5] ou string "0,1,2,3,4,5"
+      let dias = [];
+      if (typeof diasSalvos === 'string' && diasSalvos) {
+        dias = diasSalvos.split(',').map(Number).filter(n => !isNaN(n));
+      } else if (Array.isArray(diasSalvos)) {
+        dias = diasSalvos;
+      } else {
+        dias = [1,2,3,4,5]; // padrão: seg-sex
+      }
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.classList.toggle('ativo', dias.includes(parseInt(b.dataset.dia)));
+      });
+      atualizarHorariosPorDia();
+      // Preenche horários salvos
+      if (horariosPorDia) {
+        let hp = horariosPorDia;
+        if (typeof hp === 'string') { try { hp = JSON.parse(hp); } catch(_) { hp = {}; } }
+        Object.entries(hp).forEach(([dia, hor]) => {
+          const row = document.querySelector(`.horario-dia-row[data-dia="${dia}"]`);
+          if (row) {
+            const inputs = row.querySelectorAll('input');
+            if (inputs[0] && hor.ab) inputs[0].value = hor.ab;
+            if (inputs[1] && hor.fe) inputs[1].value = hor.fe;
+          }
+        });
+      }
+    }
+
+    async function salvarDiasSemana() {
+      const dias = getDiasSelecionados();
+      if (!dias.length) { mostrarToast('Selecione ao menos um dia', 'erro'); return; }
+      // Coleta horários por dia
+      const horariosPorDia = {};
+      document.querySelectorAll('.horario-dia-row').forEach(row => {
+        const dia    = row.dataset.dia;
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length === 2) {
+          horariosPorDia[dia] = { ab: inputs[0].value || '', fe: inputs[1].value || '' };
+        }
+      });
+      mostrarLoading(true);
+      const r = await api({
+        action: 'atualizarEstabelecimento',
+        id:     SALON_ID,
+        dias_semana:      dias.join(','),
+        horarios_por_dia: JSON.stringify(horariosPorDia),
+      });
+      mostrarLoading(false);
+      if (r.sucesso) mostrarToast('Dias e horários salvos!', 'sucesso');
+      else mostrarToast(r.erro || 'Erro ao salvar', 'erro');
+    }
+
+    // ════════════════════════════════════════════════════
+    // INIT
+    // ════════════════════════════════════════════════════
+    async function init() {
+      mostrarLoading(true);
+      const info = await api({ action: 'getEstabelecimento', id: SALON_ID });
+      mostrarLoading(false);
+      if (info.erro) { mostrarToast(info.erro, 'erro'); return; }
+      document.getElementById('salao-nome').textContent = info.nome;
+      document.title = 'CortaJá — ' + info.nome;
+      const linkUrl = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
+      const el = document.getElementById('link-booking-url');
+      if (el) el.textContent = linkUrl;
+      document.getElementById('data-agenda').value = dataHoje();
+      carregarAgenda();
+      // Carrega dias caso a aba config já esteja visível
+      if (document.getElementById('tab-config').style.display !== 'none') carregarConfigDias();
+      // Pré-carrega prof e serv para o cache (usado no mapa de nomes na agenda)
+      carregarProfBackground();
+      carregarServBackground();
+    }
+
+    async function carregarConfigDias() {
+      mostrarLoading(true);
+      const info = await api({ action: 'getEstabelecimento', id: SALON_ID });
+      mostrarLoading(false);
+      if (!info.erro) {
+        carregarDiasSemana(info.dias_semana, info.horarios_por_dia);
+        // Atualiza também horário padrão se existir
+        if (info.horario_abertura || info.horario_fechamento) {
+          document.querySelectorAll('.horario-dia-row').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            if (inputs[0] && !inputs[0].value) inputs[0].value = info.horario_abertura || '';
+            if (inputs[1] && !inputs[1].value) inputs[1].value = info.horario_fechamento || '';
+          });
+        }
+      }
+    }
+
+        async function carregarProfBackground() {
+      const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
+      cache.prof = Array.isArray(lista) ? lista : [];
+    }
+    async function carregarServBackground() {
+      const lista = await api({ action: 'listarServicos', id_estabelecimento: SALON_ID });
+      cache.serv = Array.isArray(lista) ? lista : [];
+    }
+
+    function copiarLink() {
+      const url = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
+      navigator.clipboard.writeText(url).then(() => mostrarToast('Link copiado!', 'sucesso'));
+    }
+    function compartilharLink() {
+      const url = CONFIG.BASE_URL + '/booking.html?id=' + SALON_ID;
+      if (navigator.share) navigator.share({ title: 'Agende seu corte!', url });
+      else copiarLink();
+    }
+
+    // ════════════════════════════════════════════════════
+    // AGENDA
+    // ════════════════════════════════════════════════════
+    document.getElementById('data-agenda').onchange = carregarAgenda;
+    document.getElementById('btn-atualizar').onclick = () => carregarAgenda();
+
+    setInterval(() => {
+      if (document.getElementById('tab-agenda').style.display !== 'none') carregarAgenda(true);
+    }, 60000);
+
+    async function carregarAgenda(silencioso = false) {
+      const data = document.getElementById('data-agenda').value;
+      if (!data) return;
+      if (!silencioso) skeletons('lista-agendamentos', true);
+
+      const lista = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
+      const filtrados = Array.isArray(lista)
+        ? lista.filter(a => normalizarData(a.data) === data)
+        : [];
+
+      const container = document.getElementById('lista-agendamentos');
+      const resumo    = document.getElementById('resumo-dia');
+
+      if (!filtrados.length) {
+        resumo.style.display = 'none';
+        container.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Sem agendamentos nesta data</p></div>';
+        return;
+      }
+
+      filtrados.sort((a, b) => (normalizarHorario(a.horario) > normalizarHorario(b.horario) ? 1 : -1));
+
+      const total       = filtrados.filter(a => !['expirado','cancelado'].includes(a.status)).length;
+      const confirmados = filtrados.filter(a => a.status === 'confirmado').length;
+      const aguardando  = filtrados.filter(a => a.status === 'selecionando').length;
+      document.getElementById('rstat-total').textContent       = total;
+      document.getElementById('rstat-confirmados').textContent = confirmados;
+      document.getElementById('rstat-aguardando').textContent  = aguardando;
+      resumo.style.display = 'flex';
+
+      const statusLabel = {
+        confirmado:   ['badge-green','Confirmado'],
+        selecionando: ['badge-gold', 'Aguardando Pix'],
+        cancelado:    ['badge-red',  'Cancelado'],
+        expirado:     ['badge-grey', 'Expirado']
+      };
+
+      container.innerHTML = filtrados.map(ag => {
+        const [cls, lbl] = statusLabel[ag.status] || ['badge-grey', ag.status];
+        const horario  = normalizarHorario(ag.horario);
+        const profNome = buscaNomeCache('prof', ag.id_cabeleireiro);
+        const servNome = buscaNomeCache('serv', ag.id_servico);
+        const emailRow = ag.email_cliente ? `<div class="ag-info-row">✉️ <strong>${ag.email_cliente}</strong></div>` : '';
+        const pixChave = ag.chave_pix || CONFIG.CHAVE_PIX_PADRAO;
+        const pixBadge = ag.status === 'selecionando'
+          ? `<div class="ag-info-row">💳 Pix: <span class="pix-inline" onclick="copiarTexto('${pixChave}','Chave Pix copiada!')">${pixChave} 📋</span></div>` : '';
+
+        return `
+          <div class="card ag-card fade-in">
+            <div class="ag-header">
+              <div class="ag-hora">${horario}</div>
+              <span class="badge ${cls}">${lbl}</span>
+            </div>
+            <div class="ag-divider"></div>
+            <div class="ag-info-row">👤 <strong>${ag.nome_cliente || '–'}</strong></div>
+            <div class="ag-info-row">📱 <strong>${ag.telefone_cliente || '–'}</strong></div>
+            ${emailRow}
+            ${profNome ? `<div class="ag-info-row">✂️ <strong>${profNome}</strong></div>` : ''}
+            ${servNome ? `<div class="ag-info-row">💈 <strong>${servNome}</strong></div>` : ''}
+            ${pixBadge}
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              ${ag.status === 'selecionando' ? `<button class="btn btn-primary btn-sm" onclick="confirmarPag('${ag.id}')">✓ Confirmar Pagamento</button>` : ''}
+              ${ag.status === 'confirmado'   ? `<button class="btn btn-danger btn-sm"  onclick="cancelarAg('${ag.id}')">✕ Cancelar</button>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function copiarTexto(t, m) { navigator.clipboard.writeText(t).then(() => mostrarToast(m || 'Copiado!', 'sucesso')); }
+
+    function normalizarData(v) {
+      if (!v) return '';
+      if (v instanceof Date) return v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
+      return String(v).substring(0, 10);
+    }
+    function normalizarHorario(v) {
+      if (!v && v !== 0) return '--:--';
+      if (typeof v === 'string' && v.includes(':')) return v.substring(0, 5);
+      if (v instanceof Date) return String(v.getHours()).padStart(2,'0') + ':' + String(v.getMinutes()).padStart(2,'0');
+      if (typeof v === 'number') { const m = Math.round(v*24*60); return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+      return String(v).substring(0, 5);
+    }
+    function buscaNomeCache(tipo, id) {
+      if (!id) return '';
+      if (tipo === 'prof' && cache.prof) { const p = cache.prof.find(x => x.id === id); return p ? p.nome : ''; }
+      if (tipo === 'serv' && cache.serv) { const s = cache.serv.find(x => x.id === id); return s ? s.nome_servico : ''; }
+      return '';
+    }
+
+    async function confirmarPag(id) {
+      mostrarLoading(true);
+      const r = await api({ action: 'confirmarPagamento', id });
+      mostrarLoading(false);
+      if (r.sucesso) { mostrarToast('Agendamento confirmado!', 'sucesso'); carregarAgenda(); }
+      else mostrarToast(r.erro || 'Erro', 'erro');
+    }
+    async function cancelarAg(id) {
+      if (!confirm('Cancelar este agendamento?')) return;
+      mostrarLoading(true);
+      await api({ action: 'cancelarAgendamento', id });
+      mostrarLoading(false);
+      mostrarToast('Agendamento cancelado', 'sucesso');
+      carregarAgenda();
+    }
+
+    // ════════════════════════════════════════════════════
+    // PROFISSIONAIS
+    // ════════════════════════════════════════════════════
+    async function carregarProf(forcar = false) {
+      if (cache.prof && !forcar) { renderProf(cache.prof); return; }
+      skeletons('lista-prof');
+      const lista = await api({ action: 'listarCabeleireiros', id_estabelecimento: SALON_ID });
+      cache.prof = Array.isArray(lista) ? lista : [];
+      const todosAgs = await api({ action: 'listarAgendamentosResponsavel', id_estabelecimento: SALON_ID });
+      if (Array.isArray(todosAgs)) {
+        cache.prof.forEach(p => {
+          p._total_ags = todosAgs.filter(a => a.id_cabeleireiro === p.id && !['expirado','cancelado'].includes(a.status)).length;
+        });
+      }
+      renderProf(cache.prof);
+    }
+
+    function renderProf(lista) {
+      const container = document.getElementById('lista-prof');
+      if (!lista.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">✂️</div><p>Nenhum profissional cadastrado</p></div>'; return; }
+      container.innerHTML = lista.map(p => {
+        const emailRow   = p.email    ? `<div class="prof-detail-row">✉️ <span>${p.email}</span></div>` : '';
+        const telRow     = p.telefone ? `<div class="prof-detail-row">📱 <span>${p.telefone}</span></div>` : '';
+        const horRow     = (p.horario_entrada && p.horario_saida) ? `<div class="prof-detail-row">🕐 <span>${p.horario_entrada} – ${p.horario_saida}</span></div>` : '';
+        const pixRow     = p.chave_pix ? `<div class="prof-detail-row">💳 Pix: <span>${p.chave_pix}</span></div>` : '';
+        const agBadge    = typeof p._total_ags === 'number' ? `<div class="prof-ag-badge">📅 ${p._total_ags} agendamento${p._total_ags !== 1 ? 's' : ''}</div>` : '';
+        return `
+          <div class="card fade-in">
+            <div class="prof-card">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
+                ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '✂️'}
+              </div>
+              <div class="prof-info">
+                <div class="prof-nome">${p.nome}</div>
+                <div class="prof-esp">${p.especialidades || 'Sem especialidades'}</div>
+                ${agBadge}
+                <div class="prof-details">${emailRow}${telRow}${horRow}${pixRow}</div>
+              </div>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProf('${p.id}')" style="flex-shrink:0;align-self:flex-start;">✕</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    document.getElementById('btn-novo-prof').onclick = () => document.getElementById('modal-prof').classList.add('open');
+    document.getElementById('btn-salvar-prof').onclick = async () => {
+      const nome = document.getElementById('fp-nome').value.trim();
+      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
+      mostrarLoading(true);
+      const r = await api({ action:'salvarCabeleireiro', id_estabelecimento:SALON_ID, nome,
+        especialidades: document.getElementById('fp-esp').value.trim(),
+        email:          document.getElementById('fp-email').value.trim(),
+        telefone:       document.getElementById('fp-telefone').value.trim(),
+        horario_entrada:document.getElementById('fp-entrada').value.trim(),
+        horario_saida:  document.getElementById('fp-saida').value.trim(),
+        chave_pix:      document.getElementById('fp-pix').value.trim(),
+        foto_url:       document.getElementById('fp-foto').value.trim() });
+      mostrarLoading(false);
+      if (r.sucesso) {
+        mostrarToast('Profissional cadastrado!', 'sucesso'); fecharModal('modal-prof');
+        cache.prof = null; carregarProf(true);
+        ['fp-nome','fp-esp','fp-email','fp-telefone','fp-entrada','fp-saida','fp-pix','fp-foto'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
+    };
+    async function deletarProf(id) {
+      if (!confirm('Excluir profissional?')) return;
+      await api({ action:'deletarCabeleireiro', id }); cache.prof = null;
+      mostrarToast('Removido', 'sucesso'); carregarProf(true);
+    }
+
+    // ════════════════════════════════════════════════════
+    // SERVIÇOS
+    // ════════════════════════════════════════════════════
+    async function carregarServ(forcar = false) {
+      if (cache.serv && !forcar) { renderServ(cache.serv); return; }
+      skeletons('lista-serv');
+      const lista = await api({ action:'listarServicos', id_estabelecimento:SALON_ID });
+      cache.serv = Array.isArray(lista) ? lista : [];
+      renderServ(cache.serv);
+    }
+    function renderServ(lista) {
+      const container = document.getElementById('lista-serv');
+      if (!lista.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">💈</div><p>Nenhum serviço cadastrado</p></div>'; return; }
+      container.innerHTML = lista.map(s => `
+        <div class="card fade-in">
+          <div class="serv-card">
+            <div>
+              <div class="serv-nome">${s.nome_servico}</div>
+              <div class="serv-dur">${s.duracao_minutos} minutos</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="serv-preco">${formatarMoeda(s.preco)}</div>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarServ('${s.id}')">✕</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+    document.getElementById('btn-novo-serv').onclick = () => document.getElementById('modal-serv').classList.add('open');
+    document.getElementById('btn-salvar-serv').onclick = async () => {
+      const nome = document.getElementById('fs-nome').value.trim();
+      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
+      mostrarLoading(true);
+      const r = await api({ action:'salvarServico', id_estabelecimento:SALON_ID, nome_servico:nome,
+        preco:document.getElementById('fs-preco').value, duracao_minutos:document.getElementById('fs-dur').value || 30 });
+      mostrarLoading(false);
+      if (r.sucesso) {
+        mostrarToast('Serviço cadastrado!', 'sucesso'); fecharModal('modal-serv');
+        cache.serv = null; carregarServ(true);
+        ['fs-nome','fs-preco','fs-dur'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
+    };
+    async function deletarServ(id) {
+      if (!confirm('Excluir serviço?')) return;
+      await api({ action:'deletarServico', id }); cache.serv = null;
+      mostrarToast('Removido', 'sucesso'); carregarServ(true);
+    }
+
+    // ════════════════════════════════════════════════════
+    // PRODUTOS
+    // ════════════════════════════════════════════════════
+    async function carregarProd(forcar = false) {
+      if (cache.prod && !forcar) { renderProd(cache.prod); return; }
+      skeletons('lista-prod');
+      const lista = await api({ action:'listarProdutos', id_estabelecimento:SALON_ID });
+      cache.prod = Array.isArray(lista) ? lista : [];
+      renderProd(cache.prod);
+    }
+    function renderProd(lista) {
+      const container = document.getElementById('lista-prod');
+      if (!lista.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">🧴</div><p>Nenhum produto cadastrado</p></div>'; return; }
+      container.innerHTML = lista.map(p => `
+        <div class="card fade-in">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;flex-shrink:0;">
+              ${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;">` : '🧴'}
+            </div>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:0.95rem;">${p.nome}</div>
+              <div style="font-size:0.78rem;color:var(--text2);">${p.descricao || ''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="font-family:var(--font-title);font-weight:700;color:var(--gold);">${formatarMoeda(p.preco)}</div>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deletarProd('${p.id}')">✕</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+    document.getElementById('btn-novo-prod').onclick = () => document.getElementById('modal-prod').classList.add('open');
+    document.getElementById('btn-salvar-prod').onclick = async () => {
+      const nome = document.getElementById('fpd-nome').value.trim();
+      if (!nome) { mostrarToast('Informe o nome', 'erro'); return; }
+      mostrarLoading(true);
+      const r = await api({ action:'salvarProduto', id_estabelecimento:SALON_ID, nome,
+        descricao:document.getElementById('fpd-desc').value.trim(),
+        preco:document.getElementById('fpd-preco').value,
+        foto_url:document.getElementById('fpd-foto').value.trim() });
+      mostrarLoading(false);
+      if (r.sucesso) {
+        mostrarToast('Produto cadastrado!', 'sucesso'); fecharModal('modal-prod');
+        cache.prod = null; carregarProd(true);
+        ['fpd-nome','fpd-desc','fpd-preco','fpd-foto'].forEach(id => document.getElementById(id).value = '');
+      } else mostrarToast(r.erro || 'Erro', 'erro');
+    };
+    async function deletarProd(id) {
+      if (!confirm('Excluir produto?')) return;
+      await api({ action:'deletarProduto', id }); cache.prod = null;
+      mostrarToast('Removido', 'sucesso'); carregarProd(true);
+    }
+
+    init();
+  </script>
+</body>
+</html>
