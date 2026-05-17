@@ -335,12 +335,16 @@
           </div>
         </div>
 
-        <!-- URL da API -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="config-section-title">URL da API (Apps Script)</div>
-          <p style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;">Cole aqui a URL de implantação do seu Apps Script.</p>
-          <input class="input" id="config-api-url" type="url" placeholder="https://script.google.com/macros/s/..." style="margin-bottom:10px;">
-          <button class="btn btn-primary btn-full" onclick="salvarApiUrl()">Salvar URL da API</button>
+        <!-- Info Supabase -->
+        <div class="card" style="margin-bottom:16px;background:rgba(62,207,142,0.04);border-color:rgba(62,207,142,0.2);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="font-size:1.3rem;">⚡</div>
+            <div style="font-weight:600;font-size:0.9rem;color:#3ecf8e;">Banco de Dados Supabase</div>
+          </div>
+          <p style="font-size:0.82rem;color:var(--text2);">Conectado ao Supabase — resposta até 10× mais rápida que Google Sheets.</p>
+          <div style="margin-top:10px;background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.75rem;color:var(--text3);word-break:break-all;">
+            ctzuxqhimsrnfppmvgcf.supabase.co
+          </div>
         </div>
 
         <!-- Chave Pix padrão -->
@@ -657,15 +661,7 @@
     // CONFIG — salva URL da API e Pix no localStorage
     // ════════════════════════════════════════════════════
     function carregarConfigInputs() {
-      document.getElementById('config-api-url').value = localStorage.getItem('cj_api_url') || CONFIG.API_URL || '';
-      document.getElementById('config-pix').value     = localStorage.getItem('cj_pix_padrao') || CONFIG.CHAVE_PIX_PADRAO || '';
-    }
-
-    function salvarApiUrl() {
-      const url = document.getElementById('config-api-url').value.trim();
-      if (!url) { mostrarToast('Cole a URL da API', 'erro'); return; }
-      localStorage.setItem('cj_api_url', url);
-      mostrarToast('URL da API salva! Recarregue para aplicar.', 'sucesso');
+      document.getElementById('config-pix').value = localStorage.getItem('cj_pix_padrao') || CONFIG.CHAVE_PIX_PADRAO || '';
     }
 
     function salvarPixPadrao() {
