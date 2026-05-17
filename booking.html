@@ -62,6 +62,28 @@
     .user-chip { display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:99px;padding:4px 12px 4px 4px;font-size:0.8rem;color:var(--text2); }
     .user-avatar { width:26px;height:26px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--gold);font-weight:700; }
 
+
+    /* ── Calendário de dias disponíveis ────────────────── */
+    .dias-semana-aviso {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,82,82,0.08); border:1px solid rgba(255,82,82,0.2);
+      border-radius:var(--radius-md); padding:12px 14px;
+      font-size:0.82rem; color:#ff7070; margin-bottom:12px;
+    }
+    .dias-disponiveis-info {
+      display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;
+    }
+    .dia-disp-chip {
+      padding:4px 12px; border-radius:99px;
+      background:var(--gold-dim); border:1px solid rgba(201,168,76,0.3);
+      color:var(--gold); font-size:0.75rem; font-weight:600;
+    }
+    /* Data bloqueada: vermelho suave */
+    input[type=date].dia-bloqueado {
+      border-color:rgba(255,82,82,0.4);
+      color:var(--red);
+    }
+
     /* ── Histórico ──────────────────────────────────────── */
     .hist-nav { display:flex;gap:8px;margin-bottom:16px; }
     .hist-tab { flex:1;padding:10px;border-radius:var(--radius-md);background:var(--bg2);border:1.5px solid transparent;font-size:0.82rem;font-weight:500;cursor:pointer;text-align:center;color:var(--text2);transition:all var(--transition);font-family:var(--font-body); }
@@ -172,6 +194,10 @@
         <!-- STEP 2 -->
         <div class="step section" id="step-2">
           <div class="section-title">Escolha a Data</div>
+          <div id="dias-aviso" style="display:none;" class="dias-semana-aviso">
+            🚫 <span id="dias-aviso-msg">Este dia não está disponível.</span>
+          </div>
+          <div id="dias-disponiveis-info" class="dias-disponiveis-info"></div>
           <input type="date" class="input" id="data-escolhida" style="margin-bottom:20px;">
           <div class="section-title">Horários Disponíveis</div>
           <div class="legenda">
@@ -558,27 +584,88 @@
     // ════════════════════════════════════════════════════
     // SLOTS — respeita duração do serviço selecionado
     // ════════════════════════════════════════════════════
+    // Dias disponíveis lidos do salão
+    let diasDisponiveis    = [1,2,3,4,5]; // padrão seg-sex
+    let horariosPorDia     = {};           // { "1": {ab:"08:00", fe:"18:00"}, ... }
+    const NOMES_DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
     const dataInput = document.getElementById('data-escolhida');
     dataInput.min   = dataHoje();
     dataInput.value = dataHoje();
-    dataInput.onchange = carregarSlots;
+    dataInput.onchange = () => { verificarDiaSelecionado(); carregarSlots(); };
+
+    // Verifica se a data selecionada é um dia disponível e mostra aviso
+    function verificarDiaSelecionado() {
+      const data = dataInput.value;
+      if (!data) return true;
+      const diaSemana = new Date(data + 'T12:00:00').getDay();
+      const aviso     = document.getElementById('dias-aviso');
+      const avisoMsg  = document.getElementById('dias-aviso-msg');
+      const disponivel = diasDisponiveis.includes(diaSemana);
+      aviso.style.display = disponivel ? 'none' : 'flex';
+      if (!disponivel) {
+        avisoMsg.textContent = `${NOMES_DIAS_SEMANA[diaSemana]} não é um dia de atendimento. Escolha outro dia.`;
+      }
+      return disponivel;
+    }
+
+    // Avança para o próximo dia disponível a partir de hoje
+    function proximoDiaDisponivel() {
+      let d = new Date();
+      for (let i = 0; i < 30; i++) {
+        if (diasDisponiveis.includes(d.getDay())) {
+          return d.toISOString().split('T')[0];
+        }
+        d.setDate(d.getDate() + 1);
+      }
+      return dataHoje();
+    }
+
+    // Mostra chips com os dias de funcionamento
+    function exibirDiasDisponiveisInfo() {
+      const container = document.getElementById('dias-disponiveis-info');
+      if (!diasDisponiveis.length) { container.innerHTML = ''; return; }
+      container.innerHTML = diasDisponiveis.map(d =>
+        `<span class="dia-disp-chip">${NOMES_DIAS_SEMANA[d]}</span>`
+      ).join('');
+    }
 
     async function carregarSlots() {
       const data = dataInput.value;
       if (!data) return;
+
+      // Bloqueia se dia não disponível
+      const diaSemana = new Date(data + 'T12:00:00').getDay();
+      if (!diasDisponiveis.includes(diaSemana)) {
+        const grid = document.getElementById('slot-grid');
+        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--red);font-size:0.85rem;text-align:center;padding:20px 0;">⚠️ O salão não atende neste dia.</p>';
+        return;
+      }
+
+      // Horário específico do dia ou padrão
+      const horDia    = horariosPorDia[diaSemana] || {};
+      const abDia     = horDia.ab || (salonInfo && salonInfo.estabelecimento ? salonInfo.estabelecimento.horario_abertura  : '');
+      const feDia     = horDia.fe || (salonInfo && salonInfo.estabelecimento ? salonInfo.estabelecimento.horario_fechamento : '');
+
       mostrarLoading(true);
       const res = await api({
         action: 'getHorariosDisponiveis',
-        id_estabelecimento: SALON_ID,
-        id_cabeleireiro: selectedProf ? selectedProf.id : '',
+        id_estabelecimento:  SALON_ID,
+        id_cabeleireiro:     selectedProf ? selectedProf.id : '',
         data,
-        duracao_minutos: selectedServ ? selectedServ.duracao_minutos : 30
+        duracao_minutos:     selectedServ ? selectedServ.duracao_minutos : 30,
+        horario_abertura:    abDia,
+        horario_fechamento:  feDia,
       });
       mostrarLoading(false);
       const grid = document.getElementById('slot-grid');
       selectedSlot = null;
-      if (res.erro || !res.slots) { grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Erro ao carregar horários</p>'; return; }
-      if (!res.slots.length) { grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Nenhum horário disponível</p>'; return; }
+      if (res.erro || !res.slots) {
+        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Erro ao carregar horários</p>'; return;
+      }
+      if (!res.slots.length) {
+        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--text2);font-size:0.85rem;text-align:center;padding:20px 0;">Nenhum horário disponível</p>'; return;
+      }
       grid.innerHTML = res.slots.map(slot => {
         const cls = slot.status === 'disponivel' ? 'slot-disponivel' : slot.status === 'selecionando' ? 'slot-selecionando' : slot.status === 'confirmado' ? 'slot-confirmado' : 'slot-bloqueado';
         return `<button class="slot ${cls}" ${slot.status === 'disponivel' ? `onclick="selecionarSlot('${slot.horario}',this)"` : 'disabled'}>${slot.horario}</button>`;
@@ -638,6 +725,30 @@
               <div style="font-family:var(--font-title);font-weight:700;color:var(--gold);">${formatarMoeda(s.preco)}</div>
             </div>`).join('')
         : '<p style="color:var(--text2);font-size:0.85rem;">Nenhum serviço disponível</p>';
+
+      // Carrega dias disponíveis do salão
+      if (info.estabelecimento.dias_semana) {
+        const ds = info.estabelecimento.dias_semana;
+        diasDisponiveis = (typeof ds === 'string' ? ds : String(ds))
+          .split(',').map(Number).filter(n => !isNaN(n));
+      }
+      if (info.estabelecimento.horarios_por_dia) {
+        try {
+          const hp = info.estabelecimento.horarios_por_dia;
+          horariosPorDia = typeof hp === 'string' ? JSON.parse(hp) : hp;
+        } catch(_) { horariosPorDia = {}; }
+      }
+
+      // Ajusta data inicial para o próximo dia disponível
+      const proxDia = proximoDiaDisponivel();
+      dataInput.value = proxDia;
+      exibirDiasDisponiveisInfo();
+      verificarDiaSelecionado();
+
+      // Atualiza rodapé com dias de funcionamento
+      const nomesAbertos = diasDisponiveis.map(d => NOMES_DIAS_SEMANA[d]).join(', ');
+      document.getElementById('salao-horario').textContent =
+        `Atendimento: ${nomesAbertos} · ${info.estabelecimento.horario_abertura||'08:00'} – ${info.estabelecimento.horario_fechamento||'18:00'}`;
 
       carregarSlots();
       if (carregarSessao()) entrarNoApp();
